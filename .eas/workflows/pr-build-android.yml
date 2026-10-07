@@ -1,0 +1,35 @@
+name: PR build · Android
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  fingerprint:
+    type: fingerprint
+    env:
+      APP_VARIANT: staging
+      DESIGN_SYSTEM: posty
+
+  get_build:
+    needs: [fingerprint]
+    type: get-build
+    params:
+      platform: android
+      profile: staging
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      wait_for_in_progress: true
+
+  repack:
+    needs: [get_build]
+    if: ${{ needs.get_build.outputs.build_id }}
+    type: repack
+    params:
+      build_id: ${{ needs.get_build.outputs.build_id }}
+
+  build:
+    needs: [get_build]
+    if: ${{ !needs.get_build.outputs.build_id }}
+    type: build
+    params:
+      platform: android
+      profile: staging

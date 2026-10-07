@@ -32,8 +32,8 @@ jobs:
 
       - run: bun run check
 
-  builds:
-    name: EAS builds · iOS · Android
+  build-ios:
+    name: Build iOS · EAS
     needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -41,56 +41,33 @@ jobs:
       contents: read
       pull-requests: write
     outputs:
-      ios_url: ${{ steps.artifacts.outputs.ios_url }}
-      android_url: ${{ steps.artifacts.outputs.android_url }}
+      build-id: ${{ steps.eas.outputs.build-id }}
+      build-url: ${{ steps.eas.outputs.build-url }}
     steps:
       - uses: actions/checkout@v7
-
-      - uses: oven-sh/setup-bun@v2
-
-      - name: Cache bun packages
-        uses: actions/cache@v6
+      - id: eas
+        uses: ./.github/actions/eas-build
         with:
-          path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-          restore-keys: bun-${{ runner.os }}-
+          platform: ios
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}
 
-      - run: bun install --frozen-lockfile
-
-      - name: Run EAS workflow
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          APP_VARIANT: staging
-        run: bunx eas-cli workflow:run .eas/workflows/pr-builds.yml --wait --json --non-interactive > run.json
-
-      - name: Extract artifacts
-        id: artifacts
-        run: |
-          build_url() {
-            jq -r --arg platform "$1" '
-              .jobs[]
-              | select(.key == "\($platform)_build" or .key == "\($platform)_repack")
-              | .outputs.build_id // empty
-            ' run.json | head -n1 | sed 's#^#https://expo.dev/accounts/manueljf/projects/posty/builds/#'
-          }
-          {
-            echo "ios_url=$(build_url ios)"
-            echo "android_url=$(build_url android)"
-            echo "run_url=$(jq -r '.url' run.json)"
-            echo "ios_mode=$(jq -r '[.jobs[] | select(.key == "ios_repack" and .outputs.build_id)] | if length > 0 then "repack" else "build" end' run.json)"
-            echo "android_mode=$(jq -r '[.jobs[] | select(.key == "android_repack" and .outputs.build_id)] | if length > 0 then "repack" else "build" end' run.json)"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Comment on PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BODY: |
-            ### EAS builds · `${{ github.event.pull_request.head.sha }}`
-
-            | Platform | Mode | Artifact |
-            | --- | --- | --- |
-            | iOS (simulator) | ${{ steps.artifacts.outputs.ios_mode }} | ${{ steps.artifacts.outputs.ios_url }} |
-            | Android (APK) | ${{ steps.artifacts.outputs.android_mode }} | ${{ steps.artifacts.outputs.android_url }} |
-
-            [Workflow run](${{ steps.artifacts.outputs.run_url }})
-        run: gh pr comment ${{ github.event.pull_request.number }} --edit-last --create-if-none --body "$BODY"
+  build-android:
+    name: Build Android · EAS
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      build-id: ${{ steps.eas.outputs.build-id }}
+      build-url: ${{ steps.eas.outputs.build-url }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: eas
+        uses: ./.github/actions/eas-build
+        with:
+          platform: android
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}

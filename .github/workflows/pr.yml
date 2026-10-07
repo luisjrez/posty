@@ -33,40 +33,60 @@ jobs:
       - run: bun run check
 
   build-ios:
-    name: Build iOS · EAS
+    name: Build iOS · ${{ vars.BUILD_RUNNER == 'eas' && 'EAS' || 'GitHub' }}
     needs: check
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+    runs-on: ${{ vars.BUILD_RUNNER == 'eas' && 'ubuntu-latest' || 'macos-26' }}
+    timeout-minutes: 120
     permissions:
       contents: read
       pull-requests: write
     outputs:
-      build-id: ${{ steps.eas.outputs.build-id }}
-      build-url: ${{ steps.eas.outputs.build-url }}
+      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
     steps:
       - uses: actions/checkout@v7
+
       - id: eas
+        if: vars.BUILD_RUNNER == 'eas'
         uses: ./.github/actions/eas-build
         with:
           platform: ios
           expo-token: ${{ secrets.EXPO_TOKEN }}
           github-token: ${{ github.token }}
 
+      - id: local
+        if: vars.BUILD_RUNNER != 'eas'
+        uses: ./.github/actions/local-build
+        with:
+          platform: ios
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}
+
   build-android:
-    name: Build Android · EAS
+    name: Build Android · ${{ vars.BUILD_RUNNER == 'eas' && 'EAS' || 'GitHub' }}
     needs: check
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     permissions:
       contents: read
       pull-requests: write
     outputs:
-      build-id: ${{ steps.eas.outputs.build-id }}
-      build-url: ${{ steps.eas.outputs.build-url }}
+      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
     steps:
       - uses: actions/checkout@v7
+
       - id: eas
+        if: vars.BUILD_RUNNER == 'eas'
         uses: ./.github/actions/eas-build
+        with:
+          platform: android
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}
+
+      - id: local
+        if: vars.BUILD_RUNNER != 'eas'
+        uses: ./.github/actions/local-build
         with:
           platform: android
           expo-token: ${{ secrets.EXPO_TOKEN }}

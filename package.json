@@ -5,21 +5,26 @@
   "dependencies": {
     "expo": "~57.0.27",
     "expo-constants": "~57.0.21",
+    "expo-dev-client": "~57.0.19",
     "expo-linking": "~57.0.12",
     "expo-router": "~57.0.25",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.0"
+    "react-native-screens": "~4.26.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
+    "@expo/env": "^2.4.3",
     "@testing-library/react-native": "^14.0.1",
     "@types/jest": "29.5.14",
     "@types/node": "^26.6.4",
     "@types/react": "~19.2.2",
+    "app-icon-badge": "^0.1.2",
+    "eas-build-cache-provider": "^24.8.0",
     "eslint": "^9",
     "eslint-config-expo": "^57.0.2",
     "eslint-config-prettier": "^10.1.8",
@@ -29,19 +34,24 @@
     "jest-expo": "~57.0.5",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "env:use": "bun scripts/env/use.ts",
+    "start": "bun run env:use development && expo start",
+    "ios": "bun run env:use development && expo run:ios",
+    "android": "bun run env:use development && expo run:android",
+    "ios:stage": "bun run env:use staging && expo prebuild --clean --platform ios && expo run:ios",
+    "android:stage": "bun run env:use staging && expo prebuild --clean --platform android && expo run:android",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
     "check": "bun run typecheck && bun run lint && bun run test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "eas-build-pre-install": "cp env/$APP_VARIANT.env .env"
   },
   "jest": {
     "preset": "jest-expo",

@@ -3,3 +3,4 @@ dist
 ios
 android
 src/design-system/generated
+expo-env.d.ts

@@ -8,7 +8,7 @@ const APP = ['@/app', '@/app/**'];
 module.exports = defineConfig([
   expoConfig,
   prettier,
-  { ignores: ['dist/*', '.expo/*', 'src/design-system/generated/*'] },
+  { ignores: ['dist/*', '.expo/*', 'src/design-system/generated/*', 'expo-env.d.ts'] },
   {
     files: ['**/*.{ts,tsx}'],
     rules: {

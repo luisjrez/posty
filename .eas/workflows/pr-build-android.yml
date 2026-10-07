@@ -1,0 +1,45 @@
+name: PR build · Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      design_system:
+        type: choice
+        options: [posty, lagoon]
+        default: posty
+
+jobs:
+  fingerprint:
+    type: fingerprint
+    environment: preview
+    env:
+      APP_VARIANT: staging
+
+  get_build:
+    needs: [fingerprint]
+    type: get-build
+    params:
+      platform: android
+      profile: staging
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      wait_for_in_progress: true
+
+  repack:
+    needs: [get_build]
+    if: ${{ needs.get_build.outputs.build_id }}
+    type: repack
+    hooks:
+      after_install_node_modules:
+        - run: bun run ds:apply --ds=${{ inputs.design_system }}
+    params:
+      build_id: ${{ needs.get_build.outputs.build_id }}
+
+  build:
+    needs: [get_build]
+    if: ${{ !needs.get_build.outputs.build_id }}
+    type: build
+    env:
+      DESIGN_SYSTEM: ${{ inputs.design_system }}
+    params:
+      platform: android
+      profile: staging

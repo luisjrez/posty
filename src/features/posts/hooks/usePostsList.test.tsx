@@ -13,9 +13,10 @@ describe('usePostsList', () => {
     expect(result.current.hasNextPage).toBe(true);
 
     await act(() => result.current.fetchNextPage());
-    await act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(result.current.data?.posts).toHaveLength(40));
 
-    expect(result.current.data?.posts).toHaveLength(45);
+    await act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(result.current.data?.posts).toHaveLength(45));
     expect(result.current.hasNextPage).toBe(false);
   });
 

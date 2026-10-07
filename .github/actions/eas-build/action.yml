@@ -1,0 +1,79 @@
+name: EAS staging build
+description: Builds or repacks the staging app for one platform on EAS and reports it on the pull request
+
+inputs:
+  platform:
+    description: ios or android
+    required: true
+  design-system:
+    description: Design system bundled into the app
+    default: posty
+  expo-token:
+    required: true
+  github-token:
+    required: true
+
+outputs:
+  build-id:
+    value: ${{ steps.result.outputs.build_id }}
+  build-url:
+    value: ${{ steps.result.outputs.build_url }}
+  mode:
+    value: ${{ steps.result.outputs.mode }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Cache bun packages
+      uses: actions/cache@v6
+      with:
+        path: ~/.bun/install/cache
+        key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+        restore-keys: bun-${{ runner.os }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile
+
+    - name: Run EAS workflow
+      shell: bash
+      env:
+        EXPO_TOKEN: ${{ inputs.expo-token }}
+      run: bunx eas-cli workflow:run .eas/workflows/pr-build-${{ inputs.platform }}.yml -F design_system=${{ inputs.design-system }} --wait --json --non-interactive > run.json
+
+    - name: Read result
+      id: result
+      shell: bash
+      run: |
+        build_id=$(jq -r '[.jobs[] | select(.key == "build" or .key == "repack") | .outputs.build_id // empty] | first // empty' run.json)
+        mode=$(jq -r '[.jobs[] | select(.key == "repack" and .outputs.build_id)] | if length > 0 then "repack" else "build" end' run.json)
+        {
+          echo "build_id=$build_id"
+          echo "build_url=https://expo.dev/accounts/manueljf/projects/posty/builds/$build_id"
+          echo "mode=$mode"
+          echo "run_url=$(jq -r '.url' run.json)"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Comment on PR
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        MARKER: <!-- eas-build-${{ inputs.platform }} -->
+        BODY: |
+          <!-- eas-build-${{ inputs.platform }} -->
+          ### EAS staging build · ${{ inputs.platform }} · `${{ github.event.pull_request.head.sha }}`
+
+          | Mode | Artifact | Run |
+          | --- | --- | --- |
+          | ${{ steps.result.outputs.mode }} | ${{ steps.result.outputs.build_url }} | [workflow](${{ steps.result.outputs.run_url }}) |
+      run: |
+        endpoint="repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
+        comment_id=$(gh api "$endpoint" --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)
+        if [ -n "$comment_id" ]; then
+          gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$comment_id" -f body="$BODY" > /dev/null
+        else
+          gh api -X POST "$endpoint" -f body="$BODY" > /dev/null
+        fi

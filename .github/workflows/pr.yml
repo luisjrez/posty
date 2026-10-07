@@ -17,9 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Cache bun packages
         uses: actions/cache@v6
@@ -28,6 +30,74 @@ jobs:
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           restore-keys: bun-${{ runner.os }}-
 
-      - run: bun install --frozen-lockfile
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
-      - run: bun run check
+      - name: Typecheck, lint and test
+        run: bun run check
+
+  build-ios:
+    name: Build iOS · ${{ vars.BUILD_RUNNER == 'eas' && 'EAS' || 'GitHub' }}
+    needs: check
+    runs-on: ${{ vars.BUILD_RUNNER == 'eas' && 'ubuntu-latest' || 'macos-26' }}
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build on EAS
+        id: eas
+        if: vars.BUILD_RUNNER == 'eas'
+        uses: ./.github/actions/eas-build
+        with:
+          platform: ios
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}
+
+      - name: Build on GitHub runner
+        id: local
+        if: vars.BUILD_RUNNER != 'eas'
+        uses: ./.github/actions/local-build
+        with:
+          platform: ios
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}
+
+  build-android:
+    name: Build Android · ${{ vars.BUILD_RUNNER == 'eas' && 'EAS' || 'GitHub' }}
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build on EAS
+        id: eas
+        if: vars.BUILD_RUNNER == 'eas'
+        uses: ./.github/actions/eas-build
+        with:
+          platform: android
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}
+
+      - name: Build on GitHub runner
+        id: local
+        if: vars.BUILD_RUNNER != 'eas'
+        uses: ./.github/actions/local-build
+        with:
+          platform: android
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          github-token: ${{ github.token }}

@@ -1,7 +1,10 @@
-import { loadProjectEnv } from '@expo/env';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+
+import { loadProjectEnv, parseEnv } from '@expo/env';
 import { z } from 'zod';
 
-import { APP_VARIANTS } from '../src/config/variant';
+import { APP_VARIANTS, type AppVariant } from '../src/config/variant';
 
 const BuildEnvSchema = z.object({
   APP_VARIANT: z.enum(APP_VARIANTS),
@@ -18,7 +21,21 @@ export function parseBuildEnv(source: unknown): BuildEnv {
   return result.data;
 }
 
+function isAppVariant(value: string | undefined): value is AppVariant {
+  return APP_VARIANTS.some((variant) => variant === value);
+}
+
+function readVariantFile(
+  projectRoot: string,
+  variant: string | undefined,
+): ReturnType<typeof parseEnv> {
+  if (!isAppVariant(variant)) return {};
+  const file = path.join(projectRoot, 'env', `${variant}.env`);
+  return existsSync(file) ? parseEnv(readFileSync(file, 'utf8')) : {};
+}
+
 export function readBuildEnv(projectRoot: string): BuildEnv {
   loadProjectEnv(projectRoot, { silent: true });
-  return parseBuildEnv(process.env);
+  const variantValues = readVariantFile(projectRoot, process.env.APP_VARIANT);
+  return parseBuildEnv({ ...variantValues, ...process.env });
 }

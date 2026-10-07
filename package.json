@@ -50,8 +50,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "check": "bun run typecheck && bun run lint && bun run test",
-    "prepare": "husky",
-    "eas-build-pre-install": "cp env/$APP_VARIANT.env .env"
+    "prepare": "husky"
   },
   "jest": {
     "preset": "jest-expo",

@@ -11,6 +11,7 @@
     },
     "development": {
       "extends": "base",
+      "environment": "development",
       "developmentClient": true,
       "distribution": "internal",
       "env": {
@@ -22,6 +23,7 @@
     },
     "staging": {
       "extends": "base",
+      "environment": "preview",
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "staging"
@@ -35,6 +37,7 @@
     },
     "production": {
       "extends": "base",
+      "environment": "production",
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production"

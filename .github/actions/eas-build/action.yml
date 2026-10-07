@@ -37,7 +37,6 @@ runs:
       shell: bash
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
-        APP_VARIANT: staging
       run: bunx eas-cli workflow:run .eas/workflows/pr-build-${{ inputs.platform }}.yml --wait --json --non-interactive > run.json
 
     - name: Read result

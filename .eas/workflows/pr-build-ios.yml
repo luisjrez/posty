@@ -6,9 +6,9 @@ on:
 jobs:
   fingerprint:
     type: fingerprint
+    environment: preview
     env:
       APP_VARIANT: staging
-      DESIGN_SYSTEM: posty
 
   get_build:
     needs: [fingerprint]

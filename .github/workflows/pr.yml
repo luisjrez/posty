@@ -60,6 +60,7 @@ jobs:
       - name: Run EAS workflow
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          APP_VARIANT: staging
         run: bunx eas-cli workflow:run .eas/workflows/pr-builds.yml --wait --json --non-interactive > run.json
 
       - name: Extract artifacts

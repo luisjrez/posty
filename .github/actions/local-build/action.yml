@@ -17,14 +17,15 @@ outputs:
   build-id:
     value: ${{ steps.store.outputs.build_id }}
   build-url:
-    value: ${{ steps.store.outputs.build_url }}
+    value: ${{ steps.store.outputs.build_url || steps.artifact.outputs.artifact-url }}
   mode:
     value: ${{ steps.lookup.outputs.mode }}
 
 runs:
   using: composite
   steps:
-    - uses: oven-sh/setup-bun@v2
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
 
     - name: Cache bun packages
       uses: actions/cache@v6
@@ -33,7 +34,8 @@ runs:
         key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
         restore-keys: bun-${{ runner.os }}-
 
-    - shell: bash
+    - name: Install dependencies
+      shell: bash
       run: bun install --frozen-lockfile
 
     - name: Pull staging env
@@ -49,32 +51,46 @@ runs:
     - name: Fingerprint
       id: fingerprint
       shell: bash
-      run: echo "hash=$(bunx fingerprint fingerprint:generate --platform ${{ inputs.platform }} | jq -r .hash)" >> "$GITHUB_OUTPUT"
+      env:
+        EXPO_TOKEN: ${{ inputs.expo-token }}
+      run: |
+        result=$(bunx eas-cli fingerprint:generate --platform ${{ inputs.platform }} --build-profile staging --json --non-interactive)
+        if ! jq -e 'any(.sources[]; .id == "expoConfig")' <<<"$result" > /dev/null; then
+          echo "::error::The fingerprint left out the app config, so it cannot be trusted"
+          exit 1
+        fi
+        echo "hash=$(jq -r .hash <<<"$result")" >> "$GITHUB_OUTPUT"
 
-    - name: Look up build on EAS
+    - name: Download build for this fingerprint
       id: lookup
       shell: bash
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
       run: |
-        url=$(bunx eas-cli build:list \
-          --platform ${{ inputs.platform }} \
-          --status finished \
-          --fingerprint-hash ${{ steps.fingerprint.outputs.hash }} \
-          --limit 1 --json --non-interactive | jq -r '.[0].artifacts.buildUrl // empty')
-        echo "source_url=$url" >> "$GITHUB_OUTPUT"
-        echo "mode=$([ -n "$url" ] && echo repack || echo build)" >> "$GITHUB_OUTPUT"
+        if source=$(bunx eas-cli build:download --fingerprint ${{ steps.fingerprint.outputs.hash }} --platform ${{ inputs.platform }} --json | jq -er .path); then
+          echo "source=$source" >> "$GITHUB_OUTPUT"
+          echo "mode=repack" >> "$GITHUB_OUTPUT"
+        else
+          echo "mode=build" >> "$GITHUB_OUTPUT"
+        fi
 
-    - uses: actions/setup-java@v6
+    - name: Free disk space
       if: inputs.platform == 'android' && steps.lookup.outputs.mode == 'build'
+      shell: bash
+      run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+
+    - name: Set up Java
+      if: inputs.platform == 'android' && steps.lookup.outputs.mode == 'build'
+      uses: actions/setup-java@v6
       with:
         distribution: temurin
         java-version: '17'
 
-    - uses: gradle/actions/setup-gradle@v6
+    - name: Set up Gradle
       if: inputs.platform == 'android' && steps.lookup.outputs.mode == 'build'
+      uses: gradle/actions/setup-gradle@v6
 
-    - name: Repack
+    - name: Repack with this commit's JavaScript
       if: steps.lookup.outputs.mode == 'repack'
       shell: bash
       env:
@@ -82,31 +98,30 @@ runs:
       run: |
         mkdir -p .build
         if [ "${{ inputs.platform }}" = ios ]; then
-          curl -fsSL -o .build/source.tar.gz "${{ steps.lookup.outputs.source_url }}"
-          mkdir -p .build/source && tar -xzf .build/source.tar.gz -C .build/source
-          bunx @expo/repack-app --platform ios --source-app .build/source/*.app --output .build/app/PostyStage.app .
-          tar -czf .build/app.tar.gz -C .build/app PostyStage.app
+          bunx @expo/repack-app --platform ios --source-app "${{ steps.lookup.outputs.source }}" --output .build/PostyStage.app .
+          tar -czf .build/app.tar.gz -C .build PostyStage.app
           echo "ARTIFACT=.build/app.tar.gz" >> "$GITHUB_ENV"
         else
-          curl -fsSL -o .build/source.apk "${{ steps.lookup.outputs.source_url }}"
-          bunx @expo/repack-app --platform android --source-app .build/source.apk --output .build/app.apk .
+          bunx @expo/repack-app --platform android --source-app "${{ steps.lookup.outputs.source }}" --output .build/app.apk .
           echo "ARTIFACT=.build/app.apk" >> "$GITHUB_ENV"
         fi
 
-    - name: Build
+    - name: Build native app
       if: steps.lookup.outputs.mode == 'build'
       shell: bash
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
         DESIGN_SYSTEM: ${{ inputs.design-system }}
+        ORG_GRADLE_PROJECT_reactNativeArchitectures: x86_64,arm64-v8a
       run: |
         mkdir -p .build
         ext=$([ "${{ inputs.platform }}" = ios ] && echo tar.gz || echo apk)
         bunx eas-cli build --local --platform ${{ inputs.platform }} --profile staging --non-interactive --output ".build/app.$ext"
         echo "ARTIFACT=.build/app.$ext" >> "$GITHUB_ENV"
 
-    - name: Store on EAS
+    - name: Store native app on EAS
       id: store
+      if: steps.lookup.outputs.mode == 'build'
       shell: bash
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
@@ -115,7 +130,9 @@ runs:
         echo "build_url=$build_url" >> "$GITHUB_OUTPUT"
         echo "build_id=${build_url##*/}" >> "$GITHUB_OUTPUT"
 
-    - uses: actions/upload-artifact@v7
+    - name: Upload app artifact
+      id: artifact
+      uses: actions/upload-artifact@v7
       with:
         name: staging-${{ inputs.platform }}
         path: ${{ env.ARTIFACT }}
@@ -133,7 +150,7 @@ runs:
 
           | Runner | Mode | Fingerprint | Artifact |
           | --- | --- | --- | --- |
-          | GitHub | ${{ steps.lookup.outputs.mode }} | `${{ steps.fingerprint.outputs.hash }}` | ${{ steps.store.outputs.build_url }} |
+          | GitHub | ${{ steps.lookup.outputs.mode }} | `${{ steps.fingerprint.outputs.hash }}` | ${{ steps.store.outputs.build_url || steps.artifact.outputs.artifact-url }} |
       run: |
         endpoint="repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
         comment_id=$(gh api "$endpoint" --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)

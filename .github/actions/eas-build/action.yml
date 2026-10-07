@@ -5,6 +5,9 @@ inputs:
   platform:
     description: ios or android
     required: true
+  design-system:
+    description: Design system bundled into the app
+    default: posty
   expo-token:
     required: true
   github-token:
@@ -37,7 +40,7 @@ runs:
       shell: bash
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
-      run: bunx eas-cli workflow:run .eas/workflows/pr-build-${{ inputs.platform }}.yml --wait --json --non-interactive > run.json
+      run: bunx eas-cli workflow:run .eas/workflows/pr-build-${{ inputs.platform }}.yml -F design_system=${{ inputs.design-system }} --wait --json --non-interactive > run.json
 
     - name: Read result
       id: result

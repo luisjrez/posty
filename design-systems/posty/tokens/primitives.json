@@ -1,0 +1,28 @@
+{
+  "palette": {
+    "ink": {
+      "0": { "$type": "color", "$value": "#FFFFFF" },
+      "50": { "$type": "color", "$value": "#F6F5F2" },
+      "100": { "$type": "color", "$value": "#ECEAE4" },
+      "200": { "$type": "color", "$value": "#D9D6CD" },
+      "400": { "$type": "color", "$value": "#9C988C" },
+      "600": { "$type": "color", "$value": "#5E5A50" },
+      "800": { "$type": "color", "$value": "#2A2823" },
+      "900": { "$type": "color", "$value": "#1B1A17" },
+      "950": { "$type": "color", "$value": "#121110" }
+    },
+    "coral": {
+      "300": { "$type": "color", "$value": "#FF9B85" },
+      "500": { "$type": "color", "$value": "#F2603F" },
+      "600": { "$type": "color", "$value": "#D94A2B" }
+    },
+    "rose": {
+      "400": { "$type": "color", "$value": "#FF6B8B" },
+      "500": { "$type": "color", "$value": "#E8436A" }
+    },
+    "red": {
+      "400": { "$type": "color", "$value": "#FF7A70" },
+      "600": { "$type": "color", "$value": "#C8352B" }
+    }
+  }
+}

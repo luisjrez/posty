@@ -1,13 +1,15 @@
-import { Text, View } from 'react-native';
+import { Box, Text } from '@/shared/components';
 
 import type { PostsScreenProps } from './PostsScreen.types';
 import { styles } from './PostsScreen.styles';
 
-// Placeholder screen: proves the route → feature wiring. Replaced in ticket 04/10.
 export function PostsScreen(_props: PostsScreenProps) {
   return (
-    <View style={styles.container}>
-      <Text>Posty</Text>
-    </View>
+    <Box style={styles.container}>
+      <Text variant="display">Posty</Text>
+      <Text variant="bodySm" color="muted">
+        Design system ready
+      </Text>
+    </Box>
   );
 }

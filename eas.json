@@ -4,7 +4,11 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "base": {},
+    "base": {
+      "env": {
+        "DESIGN_SYSTEM": "posty"
+      }
+    },
     "development": {
       "extends": "base",
       "developmentClient": true,

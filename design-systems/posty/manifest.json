@@ -1,0 +1,16 @@
+{
+  "name": "posty",
+  "version": "1.0.0",
+  "themes": {
+    "light": "tokens/posty-light.json",
+    "dark": "tokens/posty-dark.json"
+  },
+  "tokens": ["tokens/primitives.json", "tokens/scales.json", "tokens/typography.json"],
+  "fonts": [
+    { "family": "Inter-Regular", "file": "fonts/Inter_400Regular.ttf" },
+    { "family": "Inter-Medium", "file": "fonts/Inter_500Medium.ttf" },
+    { "family": "Inter-SemiBold", "file": "fonts/Inter_600SemiBold.ttf" },
+    { "family": "Inter-Bold", "file": "fonts/Inter_700Bold.ttf" },
+    { "family": "Fraunces-SemiBold", "file": "fonts/Fraunces_600SemiBold.ttf" }
+  ]
+}

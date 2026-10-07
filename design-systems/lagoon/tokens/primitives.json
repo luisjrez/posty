@@ -1,0 +1,28 @@
+{
+  "palette": {
+    "slate": {
+      "0": { "$type": "color", "$value": "#FFFFFF" },
+      "50": { "$type": "color", "$value": "#EEF6F8" },
+      "100": { "$type": "color", "$value": "#DCEBF0" },
+      "200": { "$type": "color", "$value": "#B9D3DC" },
+      "400": { "$type": "color", "$value": "#7895A3" },
+      "600": { "$type": "color", "$value": "#3E5A68" },
+      "800": { "$type": "color", "$value": "#16303D" },
+      "900": { "$type": "color", "$value": "#0C2230" },
+      "950": { "$type": "color", "$value": "#061520" }
+    },
+    "teal": {
+      "300": { "$type": "color", "$value": "#5EEAD4" },
+      "500": { "$type": "color", "$value": "#0D9488" },
+      "600": { "$type": "color", "$value": "#0F766E" }
+    },
+    "amber": {
+      "400": { "$type": "color", "$value": "#FBBF24" },
+      "500": { "$type": "color", "$value": "#D97706" }
+    },
+    "red": {
+      "400": { "$type": "color", "$value": "#F87171" },
+      "600": { "$type": "color", "$value": "#DC2626" }
+    }
+  }
+}

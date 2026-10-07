@@ -1,0 +1,16 @@
+{
+  "name": "lagoon",
+  "version": "1.0.0",
+  "themes": {
+    "light": "tokens/lagoon-day.json",
+    "dark": "tokens/lagoon-night.json"
+  },
+  "tokens": ["tokens/primitives.json", "tokens/scales.json", "tokens/typography.json"],
+  "fonts": [
+    { "family": "SpaceGrotesk-Regular", "file": "fonts/SpaceGrotesk_400Regular.ttf" },
+    { "family": "SpaceGrotesk-Medium", "file": "fonts/SpaceGrotesk_500Medium.ttf" },
+    { "family": "SpaceGrotesk-SemiBold", "file": "fonts/SpaceGrotesk_600SemiBold.ttf" },
+    { "family": "SpaceGrotesk-Bold", "file": "fonts/SpaceGrotesk_700Bold.ttf" },
+    { "family": "DMSerifDisplay-Regular", "file": "fonts/DMSerifDisplay_400Regular.ttf" }
+  ]
+}

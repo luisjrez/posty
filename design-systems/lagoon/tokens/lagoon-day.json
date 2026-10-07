@@ -1,0 +1,25 @@
+{
+  "color": {
+    "bg": {
+      "canvas": { "$type": "color", "$value": "{palette.slate.50}" },
+      "surface": { "$type": "color", "$value": "{palette.slate.0}" },
+      "muted": { "$type": "color", "$value": "{palette.slate.100}" }
+    },
+    "text": {
+      "primary": { "$type": "color", "$value": "{palette.slate.900}" },
+      "secondary": { "$type": "color", "$value": "{palette.slate.600}" },
+      "muted": { "$type": "color", "$value": "{palette.slate.400}" },
+      "accent": { "$type": "color", "$value": "{palette.teal.500}" },
+      "onAccent": { "$type": "color", "$value": "{palette.slate.0}" },
+      "danger": { "$type": "color", "$value": "{palette.red.600}" }
+    },
+    "border": {
+      "subtle": { "$type": "color", "$value": "{palette.slate.200}" }
+    },
+    "accent": {
+      "default": { "$type": "color", "$value": "{palette.teal.500}" },
+      "pressed": { "$type": "color", "$value": "{palette.teal.600}" }
+    },
+    "favorite": { "$type": "color", "$value": "{palette.amber.500}" }
+  }
+}

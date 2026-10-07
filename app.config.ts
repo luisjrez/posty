@@ -35,6 +35,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ...(config.plugins ?? []),
       'expo-router',
       'expo-status-bar',
+      'expo-font',
+      'expo-splash-screen',
       ['app-icon-badge', iconBadge(variant.badge)],
     ],
     experiments: { typedRoutes: true },

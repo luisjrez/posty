@@ -1,0 +1,75 @@
+{
+  "fontFamily": {
+    "regular": { "$type": "fontFamily", "$value": "SpaceGrotesk-Regular" },
+    "medium": { "$type": "fontFamily", "$value": "SpaceGrotesk-Medium" },
+    "semibold": { "$type": "fontFamily", "$value": "SpaceGrotesk-SemiBold" },
+    "bold": { "$type": "fontFamily", "$value": "SpaceGrotesk-Bold" },
+    "display": { "$type": "fontFamily", "$value": "DMSerifDisplay-Regular" }
+  },
+  "fontSize": {
+    "xs": { "$type": "number", "$value": 12 },
+    "sm": { "$type": "number", "$value": 14 },
+    "md": { "$type": "number", "$value": 16 },
+    "lg": { "$type": "number", "$value": 20 },
+    "xl": { "$type": "number", "$value": 24 },
+    "xxl": { "$type": "number", "$value": 40 }
+  },
+  "lineHeight": {
+    "xs": { "$type": "number", "$value": 16 },
+    "sm": { "$type": "number", "$value": 20 },
+    "md": { "$type": "number", "$value": 24 },
+    "lg": { "$type": "number", "$value": 28 },
+    "xl": { "$type": "number", "$value": 32 },
+    "xxl": { "$type": "number", "$value": 48 }
+  },
+  "typography": {
+    "display": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{fontFamily.display}",
+        "fontSize": "{fontSize.xxl}",
+        "lineHeight": "{lineHeight.xxl}"
+      }
+    },
+    "title": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{fontFamily.semibold}",
+        "fontSize": "{fontSize.lg}",
+        "lineHeight": "{lineHeight.lg}"
+      }
+    },
+    "body": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{fontFamily.regular}",
+        "fontSize": "{fontSize.md}",
+        "lineHeight": "{lineHeight.md}"
+      }
+    },
+    "bodySm": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{fontFamily.regular}",
+        "fontSize": "{fontSize.sm}",
+        "lineHeight": "{lineHeight.sm}"
+      }
+    },
+    "label": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{fontFamily.medium}",
+        "fontSize": "{fontSize.sm}",
+        "lineHeight": "{lineHeight.sm}"
+      }
+    },
+    "caption": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{fontFamily.regular}",
+        "fontSize": "{fontSize.xs}",
+        "lineHeight": "{lineHeight.xs}"
+      }
+    }
+  }
+}

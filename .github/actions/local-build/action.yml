@@ -88,9 +88,8 @@ runs:
     - name: Repack with this commit's JavaScript
       if: steps.lookup.outputs.mode == 'repack'
       shell: bash
-      env:
-        ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
       run: |
+        export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
         mkdir -p .build
         if [ "${{ inputs.platform }}" = ios ]; then
           bunx @expo/repack-app --platform ios --source-app "${{ steps.lookup.outputs.source }}" --output .build/PostyStage.app .

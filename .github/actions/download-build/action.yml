@@ -1,0 +1,52 @@
+name: Download staging build
+description: Downloads the staging app produced by the build job, from the run artifacts or from EAS
+
+inputs:
+  platform:
+    description: ios or android
+    required: true
+  build-id:
+    description: EAS build id, used when the build ran on EAS
+    default: ''
+  expo-token:
+    required: true
+
+outputs:
+  path:
+    value: ${{ steps.locate.outputs.path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download from run artifacts
+      if: inputs.build-id == ''
+      uses: actions/download-artifact@v8
+      with:
+        name: staging-${{ inputs.platform }}
+        path: .build
+
+    - name: Set up Bun
+      if: inputs.build-id != ''
+      uses: oven-sh/setup-bun@v2
+
+    - name: Download from EAS
+      if: inputs.build-id != ''
+      shell: bash
+      env:
+        EXPO_TOKEN: ${{ inputs.expo-token }}
+      run: |
+        url=$(bunx eas-cli build:view ${{ inputs.build-id }} --json | jq -er .artifacts.buildUrl)
+        ext=$([ "${{ inputs.platform }}" = ios ] && echo tar.gz || echo apk)
+        mkdir -p .build
+        curl -fsSL -o ".build/app.$ext" "$url"
+
+    - name: Locate app
+      id: locate
+      shell: bash
+      run: |
+        if [ "${{ inputs.platform }}" = ios ]; then
+          tar -xzf .build/*.tar.gz -C .build
+          echo "path=$(find .build -maxdepth 2 -name '*.app' -type d | head -n1)" >> "$GITHUB_OUTPUT"
+        else
+          echo "path=$(find .build -maxdepth 1 -name '*.apk' | head -n1)" >> "$GITHUB_OUTPUT"
+        fi

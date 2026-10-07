@@ -20,6 +20,10 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['.github/actions/**/*.mjs'],
+    rules: { 'import/no-unresolved': 'off' },
+  },
+  {
     files: ['src/features/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [

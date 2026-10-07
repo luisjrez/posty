@@ -1,0 +1,37 @@
+name: Maestro report
+description: Uploads each Maestro flow video as a browser-viewable artifact and reports the flows on the pull request
+
+inputs:
+  platform:
+    description: ios or android
+    required: true
+  results-dir:
+    description: Directory passed to maestro as --test-output-dir
+    required: true
+  report:
+    description: JUnit report written by maestro
+    required: true
+  results-url:
+    description: Artifact URL with the full Maestro results
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Install report dependencies
+      shell: bash
+      run: npm install --prefix "${{ github.action_path }}" --no-package-lock --no-audit --no-fund
+
+    - name: Upload videos and comment on PR
+      uses: actions/github-script@v9
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        RESULTS_DIR: ${{ inputs.results-dir }}
+        REPORT: ${{ inputs.report }}
+        RESULTS_URL: ${{ inputs.results-url }}
+        SCRIPT: ${{ github.action_path }}/report.mjs
+      with:
+        script: |
+          const { pathToFileURL } = require('node:url');
+          const { default: report } = await import(pathToFileURL(process.env.SCRIPT).href);
+          await report({ github, context, core });

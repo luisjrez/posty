@@ -33,6 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     web: { favicon: './assets/favicon.png' },
     plugins: [
       ...(config.plugins ?? []),
+      ['expo-dev-client', { addGeneratedScheme: false }],
       'expo-router',
       'expo-status-bar',
       'expo-font',

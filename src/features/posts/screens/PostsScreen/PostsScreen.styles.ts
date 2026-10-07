@@ -1,11 +1,18 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create((theme) => ({
-  container: {
+  centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.space.sm,
     backgroundColor: theme.colors.bg.canvas,
+  },
+  list: {
+    flex: 1,
+    backgroundColor: theme.colors.bg.canvas,
+  },
+  title: {
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: theme.space.sm,
   },
 }));

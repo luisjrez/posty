@@ -5,8 +5,12 @@ import { useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { fonts, stackScreenOptions, toNavigationTheme } from '@/design-system';
+import { enableRequestLogging } from '@/shared/api';
+import { QueryProvider } from '@/shared/query';
 
 void SplashScreen.preventAutoHideAsync();
+
+if (__DEV__) enableRequestLogging();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(fonts);
@@ -24,8 +28,10 @@ export default function RootLayout() {
   if (!ready) return null;
 
   return (
-    <ThemeProvider value={navigationTheme}>
-      <Stack screenOptions={screenOptions} />
-    </ThemeProvider>
+    <QueryProvider>
+      <ThemeProvider value={navigationTheme}>
+        <Stack screenOptions={screenOptions} />
+      </ThemeProvider>
+    </QueryProvider>
   );
 }

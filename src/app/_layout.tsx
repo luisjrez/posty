@@ -1,11 +1,10 @@
 import { useFonts } from 'expo-font';
-import { ThemeProvider } from 'expo-router';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { fonts, nativeTabsOptions, toNavigationTheme } from '@/design-system';
+import { fonts, stackScreenOptions, toNavigationTheme } from '@/design-system';
 import { enableRequestLogging } from '@/shared/api';
 import { QueryProvider } from '@/shared/query';
 
@@ -13,8 +12,19 @@ void SplashScreen.preventAutoHideAsync();
 
 if (__DEV__) enableRequestLogging();
 
-const POSTS_ICON = { default: 'doc.text', selected: 'doc.text.fill' } as const;
-const FAVORITES_ICON = { default: 'heart', selected: 'heart.fill' } as const;
+// A deep link opened on a cold start would otherwise mount the Post detail alone, with no tabs
+// and nothing to go back to; anchoring the stack keeps the tabs underneath it.
+export const unstable_settings = { anchor: '(tabs)' };
+
+// Each tab owns its header; the root stack only lets the Post detail sit above the tabs.
+const TABS_OPTIONS = { headerShown: false };
+// The detail can be reached from either tab, so a bare chevron reads right in both; the hidden
+// back title still names the button for screen readers.
+const DETAIL_OPTIONS: {
+  title: string;
+  headerBackButtonDisplayMode: 'minimal';
+  headerBackTitle: string;
+} = { title: 'Post', headerBackButtonDisplayMode: 'minimal', headerBackTitle: 'Back' };
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(fonts);
@@ -22,7 +32,7 @@ export default function RootLayout() {
   const isDark = rt.themeName === 'dark';
 
   const navigationTheme = useMemo(() => toNavigationTheme(theme, isDark), [theme, isDark]);
-  const tabsOptions = useMemo(() => nativeTabsOptions(theme), [theme]);
+  const screenOptions = useMemo(() => stackScreenOptions(theme), [theme]);
   const ready = fontsLoaded || fontError !== null;
 
   useEffect(() => {
@@ -34,16 +44,10 @@ export default function RootLayout() {
   return (
     <QueryProvider>
       <ThemeProvider value={navigationTheme}>
-        <NativeTabs {...tabsOptions}>
-          <NativeTabs.Trigger name="(posts)">
-            <NativeTabs.Trigger.Icon sf={POSTS_ICON} md="article" />
-            <NativeTabs.Trigger.Label>Posts</NativeTabs.Trigger.Label>
-          </NativeTabs.Trigger>
-          <NativeTabs.Trigger name="(favorites)">
-            <NativeTabs.Trigger.Icon sf={FAVORITES_ICON} md="favorite" />
-            <NativeTabs.Trigger.Label>Favorites</NativeTabs.Trigger.Label>
-          </NativeTabs.Trigger>
-        </NativeTabs>
+        <Stack screenOptions={screenOptions}>
+          <Stack.Screen name="(tabs)" options={TABS_OPTIONS} />
+          <Stack.Screen name="posts/[id]" options={DETAIL_OPTIONS} />
+        </Stack>
       </ThemeProvider>
     </QueryProvider>
   );

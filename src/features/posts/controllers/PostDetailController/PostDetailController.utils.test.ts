@@ -3,6 +3,7 @@ import { buildComment, buildPost } from '@/test';
 import { detailState, parsePostId, toSnapshotInput } from './PostDetailController.utils';
 
 const onRetry = jest.fn();
+const onGoBack = jest.fn();
 const post = buildPost({ id: 1 });
 const comments = [buildComment({ postId: 1 })];
 const detail = { ...post, comments };
@@ -15,6 +16,7 @@ const base = {
   fetchedAt: 5,
   savedCopy: undefined,
   onRetry,
+  onGoBack,
 };
 
 describe('parsePostId', () => {
@@ -35,7 +37,7 @@ describe('detailState', () => {
   });
 
   it('is not found when the server says so', () => {
-    expect(detailState({ ...base, isNotFound: true })).toEqual({ status: 'notFound' });
+    expect(detailState({ ...base, isNotFound: true })).toEqual({ status: 'notFound', onGoBack });
   });
 
   it('is an error with retry when there is no Post to show', () => {

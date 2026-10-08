@@ -4,30 +4,21 @@ name: Post detail · search, open a Post and read its Comments
 - launchApp:
     clearState: true
 - startRecording: ${MAESTRO_FILENAME}
-- extendedWaitUntil:
-    visible: 'sunt aut facere.*'
-    timeout: 30000
+- assertVisible: 'sunt aut facere.*'
 # iOS may start with the search bar tucked under the large title; pull down to reveal it.
 - swipe:
     start: 50%, 35%
     end: 50%, 50%
 - tapOn: 'Search posts'
 - inputText: 'dolorem eum'
-- extendedWaitUntil:
-    visible: 'dolorem eum magni eos aperiam quia'
-    timeout: 15000
+- assertVisible: 'dolorem eum magni eos aperiam quia'
 - tapOn: 'dolorem eum magni eos aperiam quia'
 # Post 6's body and its first Comment (name and email) come from the single embedded request.
-- extendedWaitUntil:
-    visible: 'ut aspernatur corporis harum nihil quis.*'
-    timeout: 15000
-- extendedWaitUntil:
-    visible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
-    timeout: 15000
+- assertVisible: 'ut aspernatur corporis harum nihil quis.*'
+- assertVisible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
 # On small screens (the CI emulator is 320x640) the comment's email sits below the fold.
 - scrollUntilVisible:
     element: 'Russel.Parker@kameron.io'
     direction: DOWN
-    timeout: 15000
 - takeScreenshot: post-detail
 - stopRecording

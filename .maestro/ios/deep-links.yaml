@@ -1,0 +1,47 @@
+appId: ${APP_ID}
+name: Deep links · cold and warm start open the Post above the tabs
+env:
+  # Each variant has its own scheme; CI runs the staging build.
+  SCHEME: posty-stage
+---
+- launchApp:
+    clearState: true
+- startRecording: ${MAESTRO_FILENAME}
+- assertVisible: 'sunt aut facere.*'
+# Cold start: the app is closed when the link arrives.
+- stopApp
+- openLink: ${SCHEME}://posts/6
+# iOS asks before opening a custom scheme; accept it when it does.
+- tapOn:
+    text: 'Open'
+    optional: true
+- assertVisible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
+- takeScreenshot: deep-link-cold
+# Back lands on the tabs kept underneath, instead of leaving the app.
+- tapOn: 'Back'
+- assertVisible: 'sunt aut facere.*'
+# Warm start: the app is open when a link through the Favorites tab arrives.
+- openLink: ${SCHEME}://favorites/posts/6
+# iOS asks before opening a custom scheme; accept it when it does.
+- tapOn:
+    text: 'Open'
+    optional: true
+- assertVisible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
+- tapOn: 'Back'
+- assertVisible: 'sunt aut facere.*'
+# A Post that doesn't exist says so and offers the way out.
+- openLink: ${SCHEME}://posts/abc
+# iOS asks before opening a custom scheme; accept it when it does.
+- tapOn:
+    text: 'Open'
+    optional: true
+- assertVisible: 'Post not found'
+- tapOn: 'Go back'
+- assertVisible: 'sunt aut facere.*'
+- openLink: ${SCHEME}://favorites
+# iOS asks before opening a custom scheme; accept it when it does.
+- tapOn:
+    text: 'Open'
+    optional: true
+- assertVisible: 'No favorites yet'
+- stopRecording

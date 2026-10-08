@@ -20,9 +20,11 @@ function PostDetailBody({ state }: PostDetailProps) {
       );
     case 'notFound':
       return (
+        // A bad link can be the only screen in the stack, so the way out is explicit.
         <EmptyState
           title="Post not found"
           message="It may have been removed, or the link is wrong."
+          action={{ label: 'Go back', onPress: state.onGoBack }}
         />
       );
     case 'error':

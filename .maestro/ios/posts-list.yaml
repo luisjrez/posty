@@ -4,9 +4,7 @@ name: Posts list · search narrows results and scroll paginates
 - launchApp:
     clearState: true
 - startRecording: ${MAESTRO_FILENAME}
-- extendedWaitUntil:
-    visible: 'sunt aut facere.*'
-    timeout: 30000
+- assertVisible: 'sunt aut facere.*'
 # Search first: the header search bar is only visible while the list is at the top. iOS may
 # start with it tucked under the large title; scrolling up reveals it, retrying until it shows.
 - scrollUntilVisible:
@@ -28,8 +26,6 @@ name: Posts list · search narrows results and scroll paginates
 - scrollUntilVisible:
     element: 'asperiores ea ipsam voluptatibus.*'
     direction: DOWN
-    # Twenty cards plus a page request is a long way on a slow CI emulator.
-    timeout: 60000
     # FlashList reports cards partly clipped by the tab bar; half visible is enough here.
     visibilityPercentage: 50
 - takeScreenshot: posts-page-2

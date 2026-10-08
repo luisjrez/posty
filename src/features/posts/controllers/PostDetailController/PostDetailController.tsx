@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
 import {
@@ -13,6 +13,12 @@ import { usePostDetail } from '../../hooks/usePostDetail';
 
 import type { PostDetailControllerProps } from './PostDetailController.types';
 import { detailState, parsePostId, toSnapshotInput } from './PostDetailController.utils';
+
+// A deep link can open the detail on a cold start, with no history to go back to.
+function goBack() {
+  if (router.canGoBack()) router.back();
+  else router.replace('/');
+}
 
 // Turns the route param and the detail query into one view state; PostDetail never fetches.
 export function PostDetailController(_props: PostDetailControllerProps) {
@@ -42,7 +48,14 @@ export function PostDetailController(_props: PostDetailControllerProps) {
         </Stack.Toolbar>
       ) : null}
       <PostDetail
-        state={detailState({ ...detail, isOnline, fetchedAt, savedCopy, onRetry: handleRetry })}
+        state={detailState({
+          ...detail,
+          isOnline,
+          fetchedAt,
+          savedCopy,
+          onRetry: handleRetry,
+          onGoBack: goBack,
+        })}
       />
     </>
   );

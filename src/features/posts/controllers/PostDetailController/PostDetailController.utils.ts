@@ -18,6 +18,7 @@ type DetailInput = {
   /** The Favorite's saved copy, if this Post is one. */
   savedCopy: FavoriteSnapshot | undefined;
   onRetry: () => void;
+  onGoBack: () => void;
 };
 
 // Fetched data wins, even a stale cache entry after a failed refetch. Offline, a Favorite falls
@@ -31,8 +32,9 @@ export function detailState({
   fetchedAt,
   savedCopy,
   onRetry,
+  onGoBack,
 }: DetailInput): PostDetailState {
-  if (isNotFound) return { status: 'notFound' };
+  if (isNotFound) return { status: 'notFound', onGoBack };
   if (detail) {
     const { comments, ...post } = detail;
     // Offline, even freshly cached data can't be refreshed, so it is flagged like a saved copy.

@@ -24,6 +24,8 @@ describe('PostList', () => {
     );
 
     expect(screen.getByLabelText('Loading posts')).toBeOnTheScreen();
+    // The skeleton lives inside the list so iOS keeps the header search bar bound to it.
+    expect(screen.getByTestId('posts-list')).toBeOnTheScreen();
   });
 
   it('shows the error with a retry', async () => {

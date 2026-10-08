@@ -1,2 +1,2 @@
 export { PostComments } from './PostComments';
-export type { PostCommentsProps, PostCommentsState } from './PostComments.types';
+export type { PostCommentsProps } from './PostComments.types';

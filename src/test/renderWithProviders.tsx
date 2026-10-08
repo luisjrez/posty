@@ -6,7 +6,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 type RouteComponent = () => ReactElement;
 
-export function createTestQueryClient(): QueryClient {
+function createTestQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
@@ -24,11 +24,8 @@ export async function renderWithProviders(ui: ReactElement) {
   return { ...result, queryClient };
 }
 
-// Pass a pre-seeded client to test hooks that read what other queries already cached.
-export async function renderHookWithProviders<Result>(
-  hook: () => Result,
-  queryClient: QueryClient = createTestQueryClient(),
-) {
+export async function renderHookWithProviders<Result>(hook: () => Result) {
+  const queryClient = createTestQueryClient();
   const result = await renderHook(hook, { wrapper: createWrapper(queryClient) });
   return { ...result, queryClient };
 }

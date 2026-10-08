@@ -1,6 +1,5 @@
-import type { PostCommentsState } from '../../components/PostComments';
 import type { PostDetailState } from '../../components/PostDetail';
-import { PostIdParamSchema, type Comment, type Post, type PostId } from '../../model';
+import { PostIdParamSchema, type PostDetail, type PostId } from '../../model';
 
 export function parsePostId(param: string | string[] | undefined): PostId | null {
   const result = PostIdParamSchema.safeParse(param);
@@ -8,24 +7,22 @@ export function parsePostId(param: string | string[] | undefined): PostId | null
 }
 
 type DetailInput = {
-  post: Post | undefined;
-  comments: readonly Comment[] | undefined;
+  detail: PostDetail | undefined;
   isNotFound: boolean;
   isError: boolean;
   onRetry: () => void;
 };
 
-function commentsState({ comments, isError, onRetry }: DetailInput): PostCommentsState {
-  if (comments) return { status: 'ready', comments };
+// Cached data wins over a failed background refetch, so a stale Post never turns into an
+// error screen. Not found is checked first: a 404 means there is nothing to keep showing.
+export function detailState({
+  detail,
+  isNotFound,
+  isError,
+  onRetry,
+}: DetailInput): PostDetailState {
+  if (isNotFound) return { status: 'notFound' };
+  if (detail) return { status: 'ready', detail };
   if (isError) return { status: 'error', onRetry };
-  return { status: 'loading' };
-}
-
-// Not found wins over a cached Post: the server's word on whether it exists is final. A Post
-// already on screen stays there when only its Comments fail.
-export function detailState(input: DetailInput): PostDetailState {
-  if (input.isNotFound) return { status: 'notFound' };
-  if (input.post) return { status: 'ready', post: input.post, comments: commentsState(input) };
-  if (input.isError) return { status: 'error', onRetry: input.onRetry };
   return { status: 'loading' };
 }

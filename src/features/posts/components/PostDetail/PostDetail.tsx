@@ -38,11 +38,11 @@ function PostDetailBody({ state }: PostDetailProps) {
         <>
           <View style={styles.post}>
             <Text variant="display" accessibilityRole="header">
-              {state.post.title}
+              {state.detail.title}
             </Text>
-            <Text>{state.post.body}</Text>
+            <Text>{state.detail.body}</Text>
           </View>
-          <PostComments state={state.comments} />
+          <PostComments comments={state.detail.comments} />
         </>
       );
   }

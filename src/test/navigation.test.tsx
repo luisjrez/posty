@@ -25,7 +25,7 @@ describe('tabs shell', () => {
 
     await act(() => router.push('/posts/3'));
 
-    expect(await screen.findByText('Post 3')).toBeOnTheScreen();
+    expect(await screen.findByText('Comment 1 on post 3')).toBeOnTheScreen();
   });
 
   it('reaches the shared detail route from the Favorites stack', async () => {
@@ -33,6 +33,6 @@ describe('tabs shell', () => {
 
     await act(() => router.push('/posts/7'));
 
-    expect(await screen.findByText('Post 7')).toBeOnTheScreen();
+    expect(await screen.findByText('Comment 1 on post 7')).toBeOnTheScreen();
   });
 });

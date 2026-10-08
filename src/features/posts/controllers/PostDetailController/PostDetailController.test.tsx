@@ -5,15 +5,9 @@ import { router } from 'expo-router';
 import { Text } from '@/shared/components';
 import { API_URL, renderScreenInStack, server } from '@/test';
 
-import { PostsListController } from '../PostsListController';
-
 import { PostDetailController } from './PostDetailController';
 
-// Routes render without props; the controllers' props types forbid any.
-function PostsRoute() {
-  return <PostsListController />;
-}
-
+// Routes render without props; the controller's props type forbids any.
 function HomeStub() {
   return <Text>Home</Text>;
 }
@@ -27,38 +21,8 @@ async function openDetail(id: string) {
   await act(() => router.push(`/posts/${id}`));
 }
 
-// Holds the detail response until released, so the in-between state can be asserted.
-function holdDetailResponse() {
-  let release: () => void = () => {};
-  const released = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  server.use(
-    http.get(`${API_URL}/posts/:id`, async () => {
-      await released;
-      return undefined;
-    }),
-  );
-  return release;
-}
-
 describe('PostDetailController', () => {
-  it('paints the Post from the list cache before its Comments arrive', async () => {
-    await renderScreenInStack(PostsRoute, { 'posts/[id]': DetailRoute });
-    const card = await screen.findByRole('button', { name: 'Post 2' });
-    const release = holdDetailResponse();
-
-    await fireEvent.press(card);
-
-    expect(await screen.findByText('Body of post 2')).toBeOnTheScreen();
-    expect(screen.getByLabelText('Loading comments')).toBeOnTheScreen();
-
-    await act(async () => release());
-
-    expect(await screen.findByText('Comment 1 on post 2')).toBeOnTheScreen();
-  });
-
-  it('loads the Post with its Comments when nothing is cached', async () => {
+  it('loads the Post with its Comments behind a skeleton', async () => {
     await openDetail('3');
 
     expect(screen.getByLabelText('Loading post')).toBeOnTheScreen();
@@ -97,19 +61,14 @@ describe('PostDetailController', () => {
     expect(await screen.findByText('Comment 1 on post 4')).toBeOnTheScreen();
   });
 
-  it('keeps the cached Post on screen and offers a retry when its Comments fail', async () => {
-    await renderScreenInStack(PostsRoute, { 'posts/[id]': DetailRoute });
-    const card = await screen.findByRole('button', { name: 'Post 5' });
-    server.use(http.get(`${API_URL}/posts/:id`, () => new HttpResponse(null, { status: 500 })));
+  it('shows a revisited Post straight from its own cache, without the skeleton', async () => {
+    await openDetail('6');
+    await screen.findByText('Comment 1 on post 6');
 
-    await fireEvent.press(card);
+    await act(() => router.back());
+    await act(() => router.push('/posts/6'));
 
-    expect(await screen.findByText('Could not load comments')).toBeOnTheScreen();
-    expect(screen.getByText('Body of post 5')).toBeOnTheScreen();
-
-    server.resetHandlers();
-    await fireEvent.press(screen.getByRole('button', { name: 'Retry' }));
-
-    expect(await screen.findByText('Comment 1 on post 5')).toBeOnTheScreen();
+    expect(screen.getByText('Comment 1 on post 6')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Loading post')).not.toBeOnTheScreen();
   });
 });

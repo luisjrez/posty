@@ -3,8 +3,8 @@ import { buildComment, buildPost } from '@/test';
 import { detailState, parsePostId } from './PostDetailController.utils';
 
 const onRetry = jest.fn();
-const post = buildPost({ id: 1 });
-const base = { post: undefined, comments: undefined, isNotFound: false, isError: false, onRetry };
+const detail = { ...buildPost({ id: 1 }), comments: [buildComment({ postId: 1 })] };
+const base = { detail: undefined, isNotFound: false, isError: false, onRetry };
 
 describe('parsePostId', () => {
   it.each([
@@ -23,36 +23,19 @@ describe('detailState', () => {
     expect(detailState(base)).toEqual({ status: 'loading' });
   });
 
-  it('is not found even when a cached Post exists', () => {
-    expect(detailState({ ...base, post, isNotFound: true })).toEqual({ status: 'notFound' });
+  it('is not found when the server says so', () => {
+    expect(detailState({ ...base, isNotFound: true })).toEqual({ status: 'notFound' });
   });
 
-  it('is an error with retry when no Post is available', () => {
+  it('is an error with retry when there is no Post to show', () => {
     expect(detailState({ ...base, isError: true })).toEqual({ status: 'error', onRetry });
   });
 
-  it('shows the Post with loading Comments', () => {
-    expect(detailState({ ...base, post })).toEqual({
-      status: 'ready',
-      post,
-      comments: { status: 'loading' },
-    });
-  });
-
-  it('shows the Post with a Comments error when the request failed', () => {
-    expect(detailState({ ...base, post, isError: true })).toEqual({
-      status: 'ready',
-      post,
-      comments: { status: 'error', onRetry },
-    });
-  });
-
   it('shows the Post with its Comments', () => {
-    const comments = [buildComment()];
-    expect(detailState({ ...base, post, comments })).toEqual({
-      status: 'ready',
-      post,
-      comments: { status: 'ready', comments },
-    });
+    expect(detailState({ ...base, detail })).toEqual({ status: 'ready', detail });
+  });
+
+  it('keeps showing a cached Post when a background refetch fails', () => {
+    expect(detailState({ ...base, detail, isError: true })).toEqual({ status: 'ready', detail });
   });
 });

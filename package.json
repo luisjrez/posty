@@ -65,6 +65,7 @@
     "prepare": "husky",
     "ds:apply": "bun scripts/design-system/cli.ts",
     "ds:check": "bun scripts/design-system/cli.ts --check",
+    "icons:generate": "bun scripts/icons/generate.ts",
     "eas-build-post-install": "bun run ds:apply --ds=${DESIGN_SYSTEM:-posty}"
   },
   "jest": {

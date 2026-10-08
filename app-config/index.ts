@@ -1,3 +1,3 @@
 export { parseBuildEnv, readBuildEnv, type BuildEnv } from './buildEnv';
-export { iconBadge } from './iconBadge';
+export { badgedIconPath, variantIcon } from './icons';
 export { VARIANTS, type VariantConfig } from './variants';

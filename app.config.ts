@@ -2,7 +2,7 @@ import 'tsx/cjs';
 
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-import { iconBadge, readBuildEnv, VARIANTS } from './app-config';
+import { readBuildEnv, VARIANTS, variantIcon } from './app-config';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const { APP_VARIANT, API_URL } = readBuildEnv(__dirname);
@@ -28,7 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       predictiveBackGestureEnabled: false,
     },
     orientation: 'portrait',
-    icon: './assets/icon.png',
+    icon: variantIcon(APP_VARIANT),
     userInterfaceStyle: 'automatic',
     web: { favicon: './assets/favicon.png' },
     plugins: [
@@ -38,7 +38,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-status-bar',
       'expo-font',
       'expo-splash-screen',
-      ['app-icon-badge', iconBadge(variant.badge)],
     ],
     experiments: { typedRoutes: true },
     extra: {

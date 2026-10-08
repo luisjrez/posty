@@ -7,36 +7,22 @@ env:
 - launchApp:
     clearState: true
 - startRecording: ${MAESTRO_FILENAME}
-- extendedWaitUntil:
-    visible: 'sunt aut facere.*'
-    timeout: 30000
+- assertVisible: 'sunt aut facere.*'
 # Cold start: the app is closed when the link arrives.
 - stopApp
 - openLink: ${SCHEME}://posts/6
-- extendedWaitUntil:
-    visible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
-    timeout: 30000
+- assertVisible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
 - takeScreenshot: deep-link-cold
 # Back lands on the Posts list kept underneath, instead of leaving the app.
 - back
-- extendedWaitUntil:
-    visible: 'sunt aut facere.*'
-    timeout: 15000
+- assertVisible: 'sunt aut facere.*'
 # Warm start: the app is open when a Favorites link arrives.
 - openLink: ${SCHEME}://favorites/posts/6
-- extendedWaitUntil:
-    visible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
-    timeout: 15000
+- assertVisible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
 - back
-- extendedWaitUntil:
-    visible: 'No favorites yet'
-    timeout: 15000
+- assertVisible: 'No favorites yet'
 - openLink: ${SCHEME}://posts/abc
-- extendedWaitUntil:
-    visible: 'Post not found'
-    timeout: 15000
+- assertVisible: 'Post not found'
 - openLink: ${SCHEME}://favorites
-- extendedWaitUntil:
-    visible: 'No favorites yet'
-    timeout: 15000
+- assertVisible: 'No favorites yet'
 - stopRecording

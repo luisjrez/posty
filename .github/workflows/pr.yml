@@ -203,7 +203,12 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
+          # boot_completed fires while the first boot is still updating system packages; that
+          # churn dropped adb mid-run (device offline after the first flow). Let it settle first.
+          # Each line runs as its own shell command, so keep them single-line.
           script: |
+            sleep 90
+            adb wait-for-device
             adb install "$APK_PATH"
             maestro test .maestro/android -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
 

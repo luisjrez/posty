@@ -1,24 +1,25 @@
-import {
-  useQuery,
-  useQueryClient,
-  type InfiniteData,
-  type QueryClient,
-} from '@tanstack/react-query';
+import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { z } from 'zod';
 
-import { isNotFoundError, type Paginated } from '@/shared/api';
+import { isNotFoundError } from '@/shared/api';
 
 import { postDetailOptions, postKeys } from '../api/posts.queries';
-import type { Post, PostDetail, PostId } from '../model';
+import { PostSchema, type Post, type PostDetail, type PostId } from '../model';
+
+// The query cache is untyped storage: a type argument on getQueriesData would only assert
+// the shape. Parsing proves it, and skips any entry that doesn't hold list pages.
+const ListCacheSchema = z.object({
+  pages: z.array(z.object({ items: z.array(PostSchema) })),
+});
 
 // Any list page (whatever its search) that already holds the Post can paint the detail
 // while its Comments load.
 function findListedPost(queryClient: QueryClient, id: PostId): Post | undefined {
-  const lists = queryClient.getQueriesData<InfiniteData<Paginated<Post>, number>>({
-    queryKey: postKeys.lists(),
-  });
-  for (const [, data] of lists) {
-    const post = data?.pages.flatMap((page) => page.items).find((item) => item.id === id);
+  for (const [, data] of queryClient.getQueriesData({ queryKey: postKeys.lists() })) {
+    const parsed = ListCacheSchema.safeParse(data);
+    if (!parsed.success) continue;
+    const post = parsed.data.pages.flatMap((page) => page.items).find((item) => item.id === id);
     if (post) return post;
   }
   return undefined;

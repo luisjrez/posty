@@ -24,6 +24,10 @@ name: Post detail · search, open a Post and read its Comments
 - extendedWaitUntil:
     visible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
     timeout: 15000
-- assertVisible: 'Russel.Parker@kameron.io'
+# On small screens (the CI emulator is 320x640) the comment's email sits below the fold.
+- scrollUntilVisible:
+    element: 'Russel.Parker@kameron.io'
+    direction: DOWN
+    timeout: 15000
 - takeScreenshot: post-detail
 - stopRecording

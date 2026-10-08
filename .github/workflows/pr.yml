@@ -62,6 +62,11 @@ jobs:
           expo-token: ${{ secrets.EXPO_TOKEN }}
           github-token: ${{ github.token }}
 
+      # Same Xcode as the E2E job, so the app is built for the runtime it is tested on.
+      - name: Select Xcode
+        if: vars.BUILD_RUNNER != 'eas'
+        run: sudo xcode-select -s /Applications/Xcode_26.5.app
+
       - name: Build on GitHub runner
         id: local
         if: vars.BUILD_RUNNER != 'eas'
@@ -115,7 +120,7 @@ jobs:
     env:
       MAESTRO_VERSION: 2.11.0
       # The XCTest driver can take minutes to start on a cold hosted macOS simulator.
-      MAESTRO_DRIVER_STARTUP_TIMEOUT: '180000'
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: '240000'
       APP_ID: com.luisjuarez.posty.stage
     steps:
       - name: Checkout
@@ -129,6 +134,10 @@ jobs:
           build-id: ${{ needs.build-ios.outputs.build-id }}
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
+      # Pin the Xcode (and so the simulator runtimes) instead of whatever the image defaults to.
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.5.app
+
       - name: Install Maestro
         run: |
           curl -fsSL "https://get.maestro.mobile.dev" | bash
@@ -136,7 +145,14 @@ jobs:
 
       - name: Boot simulator and install app
         run: |
-          udid=$(xcrun simctl list devices available --json | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
+          # An iPhone 17 Pro on the newest iOS runtime. Taking the first iPhone listed could land on
+          # an older runtime whose first boot starved the Maestro driver (the setup Postify uses).
+          udid=$(xcrun simctl list devices available -j | jq -r '
+            .devices | to_entries | map(select(.key | test("iOS")))
+            | sort_by(.key | capture("iOS-(?<v>[0-9-]+)").v | split("-") | map(tonumber))
+            | last.value | (map(select(.name == "iPhone 17 Pro")) + .) | first.udid')
+          echo "Booting $udid"
+          xcrun simctl list devices | grep "$udid"
           xcrun simctl boot "$udid"
           xcrun simctl bootstatus "$udid" -b
           xcrun simctl install "$udid" "${{ steps.build.outputs.path }}"

@@ -12,6 +12,11 @@ export const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     borderRadius: CARD_SIZE / 2,
   },
+  // The heart's mass sits in its top lobes, so a box-centered glyph looks high inside the circle;
+  // nudging it down optically centers it.
+  cardIcon: {
+    transform: [{ translateY: 1 }],
+  },
   cardPressed: {
     backgroundColor: theme.colors.bg.muted,
   },

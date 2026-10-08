@@ -49,6 +49,7 @@ export function FavoriteButton({
         name={isFavorite ? HEART_FILLED : HEART}
         size={ICON_SIZE}
         tintColor={isFavorite ? theme.colors.text.accent : theme.colors.text.secondary}
+        style={placement === 'card' ? styles.cardIcon : undefined}
       />
     </Pressable>
   );

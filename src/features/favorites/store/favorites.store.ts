@@ -13,7 +13,8 @@ export type SnapshotInput = { post: Post; comments?: Comment[] | undefined };
 type FavoritesState = {
   favorites: Favorites;
   toggle: (input: SnapshotInput) => void;
-  upsertSnapshots: (inputs: SnapshotInput[]) => void;
+  /** `syncedAt` is when the data was fetched, which can be earlier than now if it came from cache. */
+  upsertSnapshots: (inputs: readonly SnapshotInput[], syncedAt?: number) => void;
 };
 
 function toSnapshot(
@@ -41,15 +42,18 @@ export const useFavoritesStore = create<FavoritesState>()(
           return { favorites: next };
         }),
 
-      upsertSnapshots: (inputs) => {
+      upsertSnapshots: (inputs, syncedAt = Date.now()) => {
         const { favorites } = get();
-        const now = Date.now();
         const updates: Favorites = {};
         for (const input of inputs) {
           const current = favorites[input.post.id];
           if (!current) continue;
           const comments = input.comments ?? current.comments;
-          updates[input.post.id] = toSnapshot({ post: input.post, comments }, current.savedAt, now);
+          updates[input.post.id] = toSnapshot(
+            { post: input.post, comments },
+            current.savedAt,
+            syncedAt,
+          );
         }
         if (Object.keys(updates).length > 0) set({ favorites: { ...favorites, ...updates } });
       },

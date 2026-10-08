@@ -4,6 +4,7 @@ import type { NativeSyntheticEvent, TextInputFocusEventData } from 'react-native
 import { useUnistyles } from 'react-native-unistyles';
 
 import { searchBarOptions } from '@/design-system';
+import { FavoriteToggle, useSyncFavoriteSnapshots } from '@/features/favorites';
 import { useDebouncedValue } from '@/shared/lib';
 
 import { PostList, type PostListState } from '../../components/PostList';
@@ -20,6 +21,10 @@ function openPost(post: Post) {
   router.push(`/posts/${post.id}`);
 }
 
+function renderFavoriteToggle(post: Post) {
+  return <FavoriteToggle post={post} />;
+}
+
 // Owns everything stateful about the Posts tab (search text, the infinite query, pull to
 // refresh, navigation) and hands PostList plain data; PostList never fetches.
 export function PostsListController(_props: PostsListControllerProps) {
@@ -30,6 +35,7 @@ export function PostsListController(_props: PostsListControllerProps) {
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const {
     data,
+    dataUpdatedAt,
     isError,
     isPlaceholderData,
     isFetchingNextPage,
@@ -38,6 +44,9 @@ export function PostsListController(_props: PostsListControllerProps) {
     fetchNextPage,
     refetch,
   } = usePostsList(term);
+
+  const snapshots = useMemo(() => data?.posts.map((post) => ({ post })), [data]);
+  useSyncFavoriteSnapshots(snapshots, dataUpdatedAt);
 
   const searchBar = useMemo(() => searchBarOptions(theme, 'Search posts'), [theme]);
 
@@ -99,7 +108,12 @@ export function PostsListController(_props: PostsListControllerProps) {
         onChangeText={handleChangeText}
         onCancelButtonPress={handleCancel}
       />
-      <PostList state={state} emptyMessage={emptyMessage(term)} onPressPost={openPost} />
+      <PostList
+        state={state}
+        emptyMessage={emptyMessage(term)}
+        onPressPost={openPost}
+        renderAccessory={renderFavoriteToggle}
+      />
     </>
   );
 }

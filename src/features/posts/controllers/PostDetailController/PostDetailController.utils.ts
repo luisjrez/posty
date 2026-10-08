@@ -1,3 +1,5 @@
+import type { SnapshotInput } from '@/features/favorites';
+
 import type { PostDetailState } from '../../components/PostDetail';
 import { PostIdParamSchema, type PostDetail, type PostId } from '../../model';
 
@@ -25,4 +27,9 @@ export function detailState({
   if (detail) return { status: 'ready', detail };
   if (isError) return { status: 'error', onRetry };
   return { status: 'loading' };
+}
+
+// Favorites store the Post and its Comments apart; the detail response nests them.
+export function toSnapshotInput({ comments, ...post }: PostDetail): SnapshotInput {
+  return { post, comments };
 }

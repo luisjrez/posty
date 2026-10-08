@@ -20,10 +20,12 @@ function ItemSeparator() {
   return <View style={styles.separator} />;
 }
 
-export function PostList({ state, emptyMessage, onPressPost }: PostListProps) {
+export function PostList({ state, emptyMessage, onPressPost, renderAccessory }: PostListProps) {
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<Post>) => <PostCard post={item} onPress={onPressPost} />,
-    [onPressPost],
+    ({ item }: ListRenderItemInfo<Post>) => (
+      <PostCard post={item} onPress={onPressPost} accessory={renderAccessory?.(item)} />
+    ),
+    [onPressPost, renderAccessory],
   );
 
   const isReady = state.status === 'ready';

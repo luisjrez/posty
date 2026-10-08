@@ -10,6 +10,7 @@ export function usePostDetail(id: PostId | null) {
 
   return {
     detail: query.data,
+    fetchedAt: query.dataUpdatedAt,
     isNotFound: id === null || isNotFoundError(query.error),
     isError: query.isError,
     refetch: query.refetch,

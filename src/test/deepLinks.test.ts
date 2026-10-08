@@ -1,6 +1,10 @@
-import { resolveDeepLink } from './resolveDeepLink';
+import { redirectSystemPath } from '@/app/+native-intent';
 
-describe('resolveDeepLink', () => {
+function resolve(path: string) {
+  return redirectSystemPath({ path, initial: true });
+}
+
+describe('redirectSystemPath', () => {
   it.each([
     ['posty://posts/42', '/(posts)/posts/42'],
     ['posty-stage://posts/42', '/(posts)/posts/42'],
@@ -13,10 +17,10 @@ describe('resolveDeepLink', () => {
     ['posty://', '/'],
     ['', '/'],
   ])('maps %p to %p', (path, expected) => {
-    expect(resolveDeepLink(path)).toBe(expected);
+    expect(resolve(path)).toBe(expected);
   });
 
   it('leaves unknown paths for the router to report as unmatched', () => {
-    expect(resolveDeepLink('posty://settings')).toBe('/settings');
+    expect(resolve('posty://settings')).toBe('/settings');
   });
 });

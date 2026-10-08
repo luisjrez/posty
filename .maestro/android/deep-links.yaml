@@ -35,4 +35,8 @@ env:
 - extendedWaitUntil:
     visible: 'Post not found'
     timeout: 15000
+- openLink: ${SCHEME}://favorites
+- extendedWaitUntil:
+    visible: 'No favorites yet'
+    timeout: 15000
 - stopRecording

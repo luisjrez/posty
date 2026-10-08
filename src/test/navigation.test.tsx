@@ -39,17 +39,15 @@ describe('tabs shell', () => {
 
 describe('deep links', () => {
   it.each([
-    ['/(posts)/posts/5', 'Posts'],
-    ['/(favorites)/posts/5', 'Favorites'],
-  ])('opens %p on cold start with the %s list underneath', async (url, list) => {
+    ['/(posts)/posts/5', 'Post 1'],
+    ['/(favorites)/posts/5', 'No favorites yet'],
+  ])('opens %p on cold start and goes back to the list showing %p', async (url, listText) => {
     await renderRouter(APP_ROOT, { initialUrl: url });
     expect(await screen.findByText('Comment 1 on post 5')).toBeOnTheScreen();
 
     await act(() => router.back());
 
-    expect(
-      await screen.findByText(list === 'Posts' ? 'Post 1' : 'No favorites yet'),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText(listText)).toBeOnTheScreen();
   });
 
   it('opens a link while the app is already running', async () => {

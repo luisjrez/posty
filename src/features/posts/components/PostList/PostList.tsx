@@ -28,28 +28,25 @@ export function PostList({ state, emptyMessage, onPressPost }: PostListProps) {
   const isReady = state.status === 'ready';
 
   return (
-    // The themed background sits on a core View: Unistyles only updates `style` on React Native
-    // core components, so FlashList's own `style` would keep the previous theme.
-    // The FlashList stays mounted in every state: iOS binds the large title and header search
-    // bar to the first scroll view, so swapping in a different one hides the search bar.
-    <View style={styles.container}>
-      <FlashList
-        testID="posts-list"
-        data={isReady ? state.posts : EMPTY}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        ItemSeparatorComponent={ItemSeparator}
-        ListEmptyComponent={<PostListPlaceholder state={state} emptyMessage={emptyMessage} />}
-        ListFooterComponent={isReady ? <PostListFooter state={state.footer} /> : null}
-        onEndReached={isReady ? state.onEndReached : undefined}
-        onEndReachedThreshold={END_REACHED_THRESHOLD}
-        refreshing={isReady && state.isRefreshing}
-        onRefresh={isReady ? state.onRefresh : undefined}
-        scrollEnabled={isReady}
-        keyboardDismissMode="on-drag"
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.content}
-      />
-    </View>
+    // The FlashList is the screen's direct child and stays mounted in every state: iOS binds the
+    // large title and header search bar to that first scroll view, so wrapping or swapping it
+    // stops the header from collapsing or hides the search bar. The canvas background comes
+    // from the stack's `contentStyle`.
+    <FlashList
+      testID="posts-list"
+      data={isReady ? state.posts : EMPTY}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      ItemSeparatorComponent={ItemSeparator}
+      ListEmptyComponent={<PostListPlaceholder state={state} emptyMessage={emptyMessage} />}
+      ListFooterComponent={isReady ? <PostListFooter state={state.footer} /> : null}
+      onEndReached={isReady ? state.onEndReached : undefined}
+      onEndReachedThreshold={END_REACHED_THRESHOLD}
+      refreshing={isReady && state.isRefreshing}
+      onRefresh={isReady ? state.onRefresh : undefined}
+      keyboardDismissMode="on-drag"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={styles.content}
+    />
   );
 }

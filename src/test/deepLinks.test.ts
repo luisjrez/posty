@@ -6,14 +6,14 @@ function resolve(path: string) {
 
 describe('redirectSystemPath', () => {
   it.each([
-    ['posty://posts/42', '/(posts)/posts/42'],
-    ['posty-stage://posts/42', '/(posts)/posts/42'],
+    ['posty://posts/42', '/posts/42'],
+    ['posty-stage://posts/42', '/posts/42'],
     ['posty-dev://favorites', '/favorites'],
     ['posty://favorites/', '/favorites'],
-    ['posty://favorites/posts/42', '/(favorites)/posts/42'],
-    ['/favorites/posts/42', '/(favorites)/posts/42'],
-    ['posts/42?utm=x#top', '/(posts)/posts/42'],
-    ['posty://posts/abc', '/(posts)/posts/abc'],
+    ['posty://favorites/posts/42', '/posts/42'],
+    ['/favorites/posts/42', '/posts/42'],
+    ['posts/42?utm=x#top', '/posts/42'],
+    ['posty://posts/abc', '/posts/abc'],
     ['posty://', '/'],
     ['', '/'],
   ])('maps %p to %p', (path, expected) => {

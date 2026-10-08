@@ -2,7 +2,7 @@ import type { Comment, Post } from '../../model';
 
 export type PostDetailState =
   | { status: 'loading' }
-  | { status: 'notFound' }
+  | { status: 'notFound'; onGoBack: () => void }
   | { status: 'error'; onRetry: () => void }
   | {
       status: 'ready';

@@ -69,3 +69,17 @@ export function searchBarOptions(theme: Theme, placeholder: string) {
     barTintColor: theme.colors.bg.muted,
   };
 }
+
+const HEADER_BLUR: 'systemChromeMaterial' = 'systemChromeMaterial';
+
+// The tab roots: a large title that collapses on scroll plus the native header search bar.
+export function listScreenOptions(theme: Theme, title: string, searchPlaceholder: string) {
+  return {
+    title,
+    headerLargeTitle: true,
+    // Large titles force a transparent header on iOS; without a blur the collapsed header
+    // shows the list scrolling underneath the title and status bar.
+    headerBlurEffect: HEADER_BLUR,
+    headerSearchBarOptions: searchBarOptions(theme, searchPlaceholder),
+  };
+}

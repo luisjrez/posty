@@ -1,6 +1,6 @@
 import { ScrollView, View } from 'react-native';
 
-import { EmptyState, ErrorState, OfflineNotice, Text } from '@/shared/components';
+import { Button, EmptyState, ErrorState, OfflineNotice, Text } from '@/shared/components';
 
 import { PostComments } from '../PostComments';
 
@@ -20,10 +20,14 @@ function PostDetailBody({ state }: PostDetailProps) {
       );
     case 'notFound':
       return (
-        <EmptyState
-          title="Post not found"
-          message="It may have been removed, or the link is wrong."
-        />
+        // A bad link can be the only screen in the stack, so the way out is explicit.
+        <View style={styles.notFound}>
+          <EmptyState
+            title="Post not found"
+            message="It may have been removed, or the link is wrong."
+          />
+          <Button label="Go back" onPress={state.onGoBack} />
+        </View>
       );
     case 'error':
       return (

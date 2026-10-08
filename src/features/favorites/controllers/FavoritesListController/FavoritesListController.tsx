@@ -20,8 +20,7 @@ type ReadyState = Extract<PostListState, { status: 'ready' }>;
 const IDLE_FOOTER: ReadyState['footer'] = { status: 'idle' };
 
 function openPost(post: Post) {
-  // Group-qualified so the detail opens inside the Favorites tab's own stack.
-  router.push(`/(favorites)/posts/${post.id}`);
+  router.push(`/posts/${post.id}`);
 }
 
 // Favorites are one request with no pages, so reaching the end has nothing to load.

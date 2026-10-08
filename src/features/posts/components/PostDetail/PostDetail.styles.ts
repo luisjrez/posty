@@ -10,6 +10,12 @@ export const styles = StyleSheet.create((theme) => ({
     gap: theme.space.xl,
     padding: theme.space.lg,
   },
+  notFound: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.space.md,
+  },
   post: {
     gap: theme.space.md,
   },

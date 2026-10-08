@@ -228,10 +228,15 @@ jobs:
           # No Google Play services: on google_apis they update system modules in the background
           # minutes after boot, which restarted adb mid-run (device offline). The app needs none.
           target: default
+          # The device Postify's stable flows run on; the default profile is a 320x640 screen.
+          profile: pixel_7
           disable-animations: true
           # Each line runs as its own shell command, so keep them single-line.
+          # A freshly booted emulator's launcher can stop responding and cover the app with its
+          # dialog; Maestro opens the app and its links directly, so the launcher is disabled first.
           script: |
             adb wait-for-device
+            adb shell pm disable-user --user 0 com.android.launcher3
             adb install "$APK_PATH"
             maestro test .maestro/android -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
 

@@ -72,9 +72,9 @@ runs:
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
       run: |
+        mkdir -p .native
         if [ "${{ steps.cache.outputs.cache-hit }}" != true ]; then
           if eas_path=$(bunx eas-cli build:download --fingerprint ${{ steps.fingerprint.outputs.hash }} --platform ${{ inputs.platform }} --json | jq -er .path); then
-            mkdir -p .native
             case "$eas_path" in
               *.tar.gz) tar -xzf "$eas_path" -C .native ;;
               *) cp -R "$eas_path" .native/ ;;
@@ -82,7 +82,7 @@ runs:
             echo "seeded=true" >> "$GITHUB_OUTPUT"
           fi
         fi
-        source=$(find .native -maxdepth 1 \( -name '*.app' -o -name '*.apk' \) 2>/dev/null | head -n1)
+        source=$(find .native -maxdepth 1 \( -name '*.app' -o -name '*.apk' \) | head -n1)
         if [ -n "$source" ]; then
           echo "source=$source" >> "$GITHUB_OUTPUT"
           echo "mode=repack" >> "$GITHUB_OUTPUT"

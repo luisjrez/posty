@@ -163,9 +163,12 @@ Key decisions (the full ADRs are kept out of the repository):
   migration. They store snapshots of the Posts (and Comments, once the detail was opened), so the
   Favorites tab and a Favorite's detail render offline with an "Offline · updated X ago" notice.
   Screens that fetch Posts refresh those snapshots explicitly.
-- **Navigation:** native tabs, each with its own stack and a shared detail route; native header
-  search. Deep links (`posts/:id`, `favorites`, `favorites/posts/:id`) work on cold and warm start
-  and keep the tab's list underneath so back returns to it. Invalid ids show "Post not found".
+- **Navigation:** a root stack holds the native tabs (Posts and Favorites, each with its own
+  stack and native header search) and, above them, the single Post detail route `/posts/:id`.
+  The stack is anchored to the tabs, so a deep link opened on a cold start still has them
+  underneath and back returns to the list. Links (`posts/:id`, `favorites`,
+  `favorites/posts/:id`) work on cold and warm start; an invalid or missing Post shows "Post not
+  found" with a button back out.
 - **Strict TypeScript:** `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, and
   `any` banned by ESLint. Type assertions are avoided by convention (Zod parsing and type guards
   instead), not by a lint rule.

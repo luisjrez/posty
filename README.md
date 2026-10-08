@@ -149,8 +149,10 @@ on Android only in CI. What we found, and what was done about it:
 offline`) between flows. The job now uses the `default` image, which has no Play services (the
   app needs none); after that change the Android flows passed in every run that started. One later
   run failed before starting because the runner downloaded a corrupt system image.
-- **The CI emulator's screen is small (320×640).** Assertions on content below the fold failed;
-  flows now scroll to it.
+- **The CI emulator's screen was small (320×640).** Assertions on content below the fold failed;
+  flows now scroll to it, and the emulator now uses the Pixel 7 profile with its launcher
+  disabled (a fresh emulator's launcher can hang and cover the app), as in a sibling project whose
+  Android flows are stable.
 - **iOS simulators on hosted macOS runners are slow and sometimes never start Maestro's driver.**
   We saw jobs never get a macOS runner at all (capacity), the driver time out after several
   minutes, and simple flows take two minutes instead of seconds. The job now pins Xcode 26.5, runs

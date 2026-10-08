@@ -121,8 +121,11 @@ bun run e2e:android
 
 - **Unit and integration:** Jest + React Native Testing Library, with the API mocked at the network
   level by MSW, so tests go through the real Axios client, interceptors and Zod schemas.
-- **End to end:** Maestro flows per platform in `.maestro/` (list and paging, search → detail with
-  comments, favorites, the Favorites tab, deep links on cold and warm start).
+- **End to end:** one set of Maestro flows for both platforms in `.maestro/` (list and paging,
+  search, detail with comments, favorites, the Favorites tab, deep links on cold and warm start),
+  with platform conditions where they differ and shared launch/open-link subflows. App elements are
+  found by stable test IDs (`post-1`, `post-1-favorite`, `comment-1`, `post-detail-1`,
+  `post-not-found`), never by the API's text.
 
 ### CI
 
@@ -160,6 +163,10 @@ offline`) between flows. The job now uses the `default` image, which has no Play
   app once to absorb the simulator's first-boot work, and waits up to four minutes for the driver.
   These changes have not yet been proven with three consecutive green runs, so an iOS end-to-end
   failure in CI should be read as likely infrastructure until its logs say otherwise.
+- **The emulator download failed.** The runner installs the latest Android emulator by default,
+  and that download arrived corrupt more than once; the emulator build is now pinned.
+- **Flows matched the API's text.** They now use test IDs and share one file per flow across
+  platforms.
 - **A timing bug in the search flow.** It waited for a result that was already on the unfiltered
   list; it now waits for a non-matching Post to disappear.
 

@@ -36,3 +36,33 @@ describe('tabs shell', () => {
     expect(await screen.findByText('Comment 1 on post 7')).toBeOnTheScreen();
   });
 });
+
+describe('deep links', () => {
+  it.each([
+    ['/(posts)/posts/5', 'Posts'],
+    ['/(favorites)/posts/5', 'Favorites'],
+  ])('opens %p on cold start with the %s list underneath', async (url, list) => {
+    await renderRouter(APP_ROOT, { initialUrl: url });
+    expect(await screen.findByText('Comment 1 on post 5')).toBeOnTheScreen();
+
+    await act(() => router.back());
+
+    expect(
+      await screen.findByText(list === 'Posts' ? 'Post 1' : 'No favorites yet'),
+    ).toBeOnTheScreen();
+  });
+
+  it('opens a link while the app is already running', async () => {
+    await renderRouter(APP_ROOT, { initialUrl: '/favorites' });
+
+    await act(() => router.navigate('/(posts)/posts/6'));
+
+    expect(await screen.findByText('Comment 1 on post 6')).toBeOnTheScreen();
+  });
+
+  it('shows "Post not found" for an invalid id', async () => {
+    await renderRouter(APP_ROOT, { initialUrl: '/(posts)/posts/abc' });
+
+    expect(await screen.findByText('Post not found')).toBeOnTheScreen();
+  });
+});

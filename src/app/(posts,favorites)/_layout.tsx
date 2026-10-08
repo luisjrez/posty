@@ -6,9 +6,11 @@ import { searchBarOptions, stackScreenOptions, type Theme } from '@/design-syste
 
 // Each tab gets its own copy of this stack (and of the shared detail route); `segment`
 // tells which tab is rendering it. The list screens live in the single-tab groups.
+// The anchor is the screen kept under a deep-linked detail, so back returns to the tab's list.
+// The root key covers the first group, `(posts)`; other groups go under their bare name.
 export const unstable_settings = {
-  '(posts)': { initialRouteName: 'index' },
-  '(favorites)': { initialRouteName: 'favorites' },
+  anchor: 'index',
+  favorites: { anchor: 'favorites' },
 };
 
 const LISTS = {

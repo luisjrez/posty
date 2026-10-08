@@ -1,0 +1,11 @@
+# Launches the staging build from a clean state; its bundle is embedded, so nothing else is needed.
+# Post 1 proves the first page arrived from the server. App elements are found by testID, which
+# reads the same on iOS and Android and doesn't depend on the API's text.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: 'post-1'
+    timeout: 20000

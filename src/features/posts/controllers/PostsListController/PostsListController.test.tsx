@@ -160,12 +160,12 @@ describe('PostsListController', () => {
 
   it('saves a Post from its card heart and persists it', async () => {
     await renderScreenInStack(PostsRoute);
-    const heart = await screen.findByTestId('favorite-toggle-2');
+    const heart = await screen.findByTestId('post-2-favorite');
 
     await fireEvent.press(heart);
 
     expect(heart).toBeSelected();
-    expect(screen.getByTestId('favorite-toggle-1')).not.toBeSelected();
+    expect(screen.getByTestId('post-1-favorite')).not.toBeSelected();
     expect(storage.getString('favorites')).toContain('"title":"Post 2"');
   });
 

@@ -24,7 +24,8 @@ function PostDetailBody({ state }: PostDetailProps) {
         <EmptyState
           title="Post not found"
           message="It may have been removed, or the link is wrong."
-          action={{ label: 'Go back', onPress: state.onGoBack }}
+          action={{ label: 'Go back', onPress: state.onGoBack, testID: 'post-not-found-go-back' }}
+          testID="post-not-found"
         />
       );
     case 'error':
@@ -41,7 +42,7 @@ function PostDetailBody({ state }: PostDetailProps) {
           {state.offlineUpdatedAt === undefined ? null : (
             <OfflineNotice updatedAt={state.offlineUpdatedAt} />
           )}
-          <View style={styles.post}>
+          <View style={styles.post} testID={`post-detail-${state.post.id}`}>
             <Text variant="display" accessibilityRole="header">
               {state.post.title}
             </Text>

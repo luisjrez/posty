@@ -1,0 +1,67 @@
+name: Deep links · cold and warm start open the Post above the tabs
+appId: ${APP_ID}
+env:
+  # Each variant has its own scheme; CI runs the staging build.
+  SCHEME: posty-stage
+# Each flow records its own video (the CI report links one per flow); onFlowComplete stops it
+# whether the flow passed or failed.
+onFlowStart:
+  - startRecording: ${MAESTRO_FILENAME}
+onFlowComplete:
+  - stopRecording
+---
+- runFlow: launch/release.yaml
+# Cold start: the app is closed when the link arrives. iOS's link prompt is occasionally dropped
+# on a cold CI simulator after "Open" is tapped, so the link is tried once more before failing.
+- stopApp
+- retry:
+    maxRetries: 1
+    commands:
+      - runFlow:
+          file: launch/open-link.yaml
+          env:
+            LINK: ${SCHEME}://posts/1
+      - extendedWaitUntil:
+          visible:
+            id: 'comment-1'
+          timeout: 30000
+# Back lands on the tabs kept underneath. The header's back button is labelled "Back" on iOS and
+# "Navigate up" on Android.
+- tapOn: 'Back|Navigate up'
+- extendedWaitUntil:
+    visible:
+      id: 'post-1'
+    timeout: 10000
+# Warm start: a link through the Favorites tab while the app is open.
+- retry:
+    maxRetries: 1
+    commands:
+      - runFlow:
+          file: launch/open-link.yaml
+          env:
+            LINK: ${SCHEME}://favorites/posts/2
+      - extendedWaitUntil:
+          visible:
+            id: 'post-detail-2'
+          timeout: 20000
+- tapOn: 'Back|Navigate up'
+# A Post that doesn't exist says so, and its button leads to the tabs even on a cold start,
+# where there is no history to go back to.
+- stopApp
+- retry:
+    maxRetries: 1
+    commands:
+      - runFlow:
+          file: launch/open-link.yaml
+          env:
+            LINK: ${SCHEME}://posts/999
+      - extendedWaitUntil:
+          visible:
+            id: 'post-not-found'
+          timeout: 30000
+- tapOn:
+    id: 'post-not-found-go-back'
+- extendedWaitUntil:
+    visible:
+      id: 'post-1'
+    timeout: 10000

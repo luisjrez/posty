@@ -1,0 +1,19 @@
+name: Tabs · switch between Posts and Favorites
+appId: ${APP_ID}
+env:
+  # Each variant has its own scheme; CI runs the staging build.
+  SCHEME: posty-stage
+# Each flow records its own video (the CI report links one per flow); onFlowComplete stops it
+# whether the flow passed or failed.
+onFlowStart:
+  - startRecording: ${MAESTRO_FILENAME}
+onFlowComplete:
+  - stopRecording
+---
+- runFlow: launch/release.yaml
+- tapOn: 'Favorites'
+- assertVisible: 'No favorites yet'
+- takeScreenshot: favorites-tab
+- tapOn: 'Posts'
+- assertVisible:
+    id: 'post-1'

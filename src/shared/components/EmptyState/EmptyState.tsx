@@ -6,9 +6,9 @@ import { Text } from '../Text';
 import { styles } from './EmptyState.styles';
 import type { EmptyStateProps } from './EmptyState.types';
 
-export function EmptyState({ title, message, action }: EmptyStateProps) {
+export function EmptyState({ title, message, action, testID }: EmptyStateProps) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={testID}>
       <Text variant="title" align="center">
         {title}
       </Text>
@@ -17,7 +17,9 @@ export function EmptyState({ title, message, action }: EmptyStateProps) {
           {message}
         </Text>
       ) : null}
-      {action ? <Button label={action.label} onPress={action.onPress} /> : null}
+      {action ? (
+        <Button label={action.label} onPress={action.onPress} testID={action.testID} />
+      ) : null}
     </View>
   );
 }

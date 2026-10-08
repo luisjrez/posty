@@ -40,6 +40,8 @@ describe('PostDetailController', () => {
     expect(screen.getByText('Post 3')).toBeOnTheScreen();
     expect(screen.getByText('Body of post 3')).toBeOnTheScreen();
     expect(screen.getByText('user32@example.com')).toBeOnTheScreen();
+    expect(screen.getByTestId('post-detail-3')).toBeOnTheScreen();
+    expect(screen.getByTestId('comment-32')).toBeOnTheScreen();
     expect(screen.getByText('Body of comment 32')).toBeOnTheScreen();
   });
 
@@ -47,6 +49,8 @@ describe('PostDetailController', () => {
     await openDetail('999');
 
     expect(await screen.findByText('Post not found')).toBeOnTheScreen();
+    expect(screen.getByTestId('post-not-found')).toBeOnTheScreen();
+    expect(screen.getByTestId('post-not-found-go-back')).toBeOnTheScreen();
   });
 
   it('says the Post was not found for an invalid id without asking the server', async () => {
@@ -86,9 +90,9 @@ describe('PostDetailController', () => {
     await openDetail('3');
     await screen.findByText('Comment 1 on post 3');
 
-    await fireEvent.press(screen.getByTestId('favorite-toggle-3'));
+    await fireEvent.press(screen.getByTestId('post-3-favorite'));
 
-    expect(screen.getByTestId('favorite-toggle-3')).toBeSelected();
+    expect(screen.getByTestId('post-3-favorite')).toBeSelected();
     expect(useFavoritesStore.getState().favorites[3]?.comments).toHaveLength(2);
   });
 

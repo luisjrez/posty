@@ -7,7 +7,7 @@ import type { CommentItemProps } from './CommentItem.types';
 
 export function CommentItem({ comment }: CommentItemProps) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={`comment-${comment.id}`}>
       <Text variant="label">{comment.name}</Text>
       <Text variant="caption" color="muted">
         {comment.email}

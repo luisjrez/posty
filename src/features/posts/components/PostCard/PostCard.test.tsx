@@ -11,6 +11,7 @@ describe('PostCard', () => {
     await render(<PostCard post={post} onPress={onPress} />);
 
     expect(screen.getByText('A body')).toBeOnTheScreen();
+    expect(screen.getByTestId(`post-${post.id}`)).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'A title' }));
 
     expect(onPress).toHaveBeenCalledWith(post);

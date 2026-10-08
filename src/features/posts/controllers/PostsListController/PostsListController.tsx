@@ -35,6 +35,7 @@ export function PostsListController(_props: PostsListControllerProps) {
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const {
     data,
+    dataUpdatedAt,
     isError,
     isPlaceholderData,
     isFetchingNextPage,
@@ -45,7 +46,7 @@ export function PostsListController(_props: PostsListControllerProps) {
   } = usePostsList(term);
 
   const snapshots = useMemo(() => data?.posts.map((post) => ({ post })), [data]);
-  useSyncFavoriteSnapshots(snapshots);
+  useSyncFavoriteSnapshots(snapshots, dataUpdatedAt);
 
   const searchBar = useMemo(() => searchBarOptions(theme, 'Search posts'), [theme]);
 

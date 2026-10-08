@@ -1,12 +1,19 @@
 import { http, HttpResponse } from 'msw';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import { useLocalSearchParams } from 'expo-router';
 
 import { useFavoritesStore } from '@/features/favorites';
 import { Text } from '@/shared/components';
 import { storage } from '@/shared/lib';
-import { API_URL, buildPost, renderScreenInStack, server, typeInHeaderSearch } from '@/test';
+import {
+  API_URL,
+  buildComment,
+  buildPost,
+  renderScreenInStack,
+  server,
+  typeInHeaderSearch,
+} from '@/test';
 
 import { PostsListController } from './PostsListController';
 
@@ -162,10 +169,11 @@ describe('PostsListController', () => {
     expect(storage.getString('favorites')).toContain('"title":"Post 2"');
   });
 
-  it('refreshes the saved copy of a Favorite when the list is fetched again', async () => {
+  it('refreshes the saved copy of a Favorite, keeping its Comments, when the list is refetched', async () => {
     await renderScreenInStack(PostsRoute);
     await screen.findByText("You've reached the end");
-    await fireEvent.press(screen.getByTestId('favorite-toggle-1'));
+    const comments = [buildComment({ postId: 1 })];
+    await act(() => useFavoritesStore.getState().toggle({ post: buildPost({ id: 1 }), comments }));
     server.use(
       http.get(`${API_URL}/posts`, () =>
         HttpResponse.json([buildPost({ id: 1, title: 'Edited' }), buildPost({ id: 2 })], {
@@ -179,6 +187,8 @@ describe('PostsListController', () => {
     await waitFor(() =>
       expect(useFavoritesStore.getState().favorites[1]?.post.title).toBe('Edited'),
     );
+    // List responses carry no Comments, so the ones saved from the detail are kept.
+    expect(useFavoritesStore.getState().favorites[1]?.comments).toEqual(comments);
     expect(Object.keys(useFavoritesStore.getState().favorites)).toEqual(['1']);
   });
 });

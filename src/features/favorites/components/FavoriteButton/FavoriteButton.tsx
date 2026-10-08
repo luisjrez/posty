@@ -1,12 +1,20 @@
-import { SymbolView } from 'expo-symbols';
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { Pressable, type PressableStateCallbackType } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { styles } from './FavoriteButton.styles';
 import type { FavoriteButtonProps } from './FavoriteButton.types';
 
-const HEART = { ios: 'heart', android: 'favorite_border', web: 'favorite_border' } as const;
-const HEART_FILLED = { ios: 'heart.fill', android: 'favorite', web: 'favorite' } as const;
+const HEART = {
+  ios: 'heart',
+  android: 'favorite_border',
+  web: 'favorite_border',
+} satisfies SymbolViewProps['name'];
+const HEART_FILLED = {
+  ios: 'heart.fill',
+  android: 'favorite',
+  web: 'favorite',
+} satisfies SymbolViewProps['name'];
 const HIT_SLOP = 4;
 const ICON_SIZE = 22;
 

@@ -51,6 +51,15 @@ describe('favorites store', () => {
     expect(favorites[other.id]).toBeUndefined();
   });
 
+  it('upsertSnapshots stamps syncedAt with the fetch time it is given', () => {
+    const post = buildPost();
+    toggle({ post });
+
+    upsertSnapshots([{ post }], SYNCED_AT);
+
+    expect(useFavoritesStore.getState().favorites[post.id]?.syncedAt).toBe(SYNCED_AT);
+  });
+
   it('upsertSnapshots keeps the saved Comments when none are given', () => {
     const post = buildPost();
     const comments = [buildComment({ postId: post.id })];

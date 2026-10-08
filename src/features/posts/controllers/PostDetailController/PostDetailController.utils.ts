@@ -1,11 +1,7 @@
+import type { SnapshotInput } from '@/features/favorites';
+
 import type { PostDetailState } from '../../components/PostDetail';
-import {
-  PostIdParamSchema,
-  type Comment,
-  type Post,
-  type PostDetail,
-  type PostId,
-} from '../../model';
+import { PostIdParamSchema, type PostDetail, type PostId } from '../../model';
 
 export function parsePostId(param: string | string[] | undefined): PostId | null {
   const result = PostIdParamSchema.safeParse(param);
@@ -34,9 +30,6 @@ export function detailState({
 }
 
 // Favorites store the Post and its Comments apart; the detail response nests them.
-export function toSnapshotInput({ comments, ...post }: PostDetail): {
-  post: Post;
-  comments: Comment[];
-} {
+export function toSnapshotInput({ comments, ...post }: PostDetail): SnapshotInput {
   return { post, comments };
 }

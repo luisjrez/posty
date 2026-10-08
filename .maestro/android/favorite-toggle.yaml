@@ -12,9 +12,16 @@ name: Favorite toggle · save a Post from its card
     selected: false
 - tapOn:
     id: 'favorite-toggle-1'
-# The heart fills (selected) and stays filled: the toggle is backed by the persisted store.
 - assertVisible:
     id: 'favorite-toggle-1'
     selected: true
 - takeScreenshot: favorite-toggle
+# Relaunching without clearing state proves the Favorite was persisted, not just toggled.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'favorite-toggle-1'
+      selected: true
+    timeout: 30000
 - stopRecording

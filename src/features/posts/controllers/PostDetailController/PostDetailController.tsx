@@ -12,12 +12,12 @@ import { detailState, parsePostId, toSnapshotInput } from './PostDetailControlle
 // Turns the route param and the detail query into one view state; PostDetail never fetches.
 export function PostDetailController(_props: PostDetailControllerProps) {
   const { id } = useLocalSearchParams();
-  const { refetch, ...detail } = usePostDetail(parsePostId(id));
+  const { refetch, fetchedAt, ...detail } = usePostDetail(parsePostId(id));
 
   // The detail is the only fetch that carries Comments, so it is what keeps them fresh offline.
   const snapshot = useMemo(() => detail.detail && toSnapshotInput(detail.detail), [detail.detail]);
   const snapshots = useMemo(() => (snapshot ? [snapshot] : undefined), [snapshot]);
-  useSyncFavoriteSnapshots(snapshots);
+  useSyncFavoriteSnapshots(snapshots, fetchedAt);
 
   const handleRetry = useCallback(() => void refetch(), [refetch]);
 
@@ -26,7 +26,7 @@ export function PostDetailController(_props: PostDetailControllerProps) {
       {snapshot ? (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.View>
-            <FavoriteToggle post={snapshot.post} comments={snapshot.comments} />
+            <FavoriteToggle {...snapshot} />
           </Stack.Toolbar.View>
         </Stack.Toolbar>
       ) : null}

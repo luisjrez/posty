@@ -15,7 +15,7 @@ const HEART_FILLED = {
   android: 'favorite',
   web: 'favorite',
 } satisfies SymbolViewProps['name'];
-const HIT_SLOP = 4;
+const HIT_SLOP = 4; // (44 - 36) / 2
 const ICON_SIZE = 22;
 
 function buttonStyle({ pressed }: PressableStateCallbackType) {

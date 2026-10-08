@@ -1,13 +1,16 @@
 import { StyleSheet } from 'react-native-unistyles';
 
+// A 36pt circle keeps the pressed highlight inside a 44pt header bar; the hit slop brings the
+// touch target back up to the 44pt minimum.
+const SIZE = 36;
+
 export const styles = StyleSheet.create((theme) => ({
   button: {
-    // 44pt is the minimum touch target on iOS (48dp on Android is met by the hit slop).
-    width: 44,
-    height: 44,
+    width: SIZE,
+    height: SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.radius.md,
+    borderRadius: SIZE / 2,
   },
   pressed: {
     backgroundColor: theme.colors.bg.muted,

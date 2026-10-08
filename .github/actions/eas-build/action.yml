@@ -58,6 +58,7 @@ runs:
         } >> "$GITHUB_OUTPUT"
 
     - name: Comment on PR
+      if: github.event_name == 'pull_request'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}

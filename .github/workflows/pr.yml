@@ -3,9 +3,11 @@ name: PR
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 concurrency:
-  group: pr-${{ github.event.pull_request.number }}
+  group: pr-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -45,7 +47,7 @@ jobs:
       contents: read
       pull-requests: write
     outputs:
-      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-id: ${{ steps.eas.outputs.build-id }}
       build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
     steps:
       - name: Checkout
@@ -78,7 +80,7 @@ jobs:
       contents: read
       pull-requests: write
     outputs:
-      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-id: ${{ steps.eas.outputs.build-id }}
       build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
     steps:
       - name: Checkout
@@ -122,7 +124,7 @@ jobs:
         uses: ./.github/actions/download-build
         with:
           platform: ios
-          build-id: ${{ vars.BUILD_RUNNER == 'eas' && needs.build-ios.outputs.build-id || '' }}
+          build-id: ${{ needs.build-ios.outputs.build-id }}
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install Maestro
@@ -178,7 +180,7 @@ jobs:
         uses: ./.github/actions/download-build
         with:
           platform: android
-          build-id: ${{ vars.BUILD_RUNNER == 'eas' && needs.build-android.outputs.build-id || '' }}
+          build-id: ${{ needs.build-android.outputs.build-id }}
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Enable KVM

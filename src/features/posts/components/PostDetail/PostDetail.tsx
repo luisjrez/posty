@@ -1,6 +1,6 @@
 import { ScrollView, View } from 'react-native';
 
-import { EmptyState, ErrorState, Text } from '@/shared/components';
+import { EmptyState, ErrorState, OfflineNotice, Text } from '@/shared/components';
 
 import { PostComments } from '../PostComments';
 
@@ -36,13 +36,16 @@ function PostDetailBody({ state }: PostDetailProps) {
     case 'ready':
       return (
         <>
+          {state.offlineUpdatedAt === undefined ? null : (
+            <OfflineNotice updatedAt={state.offlineUpdatedAt} />
+          )}
           <View style={styles.post}>
             <Text variant="display" accessibilityRole="header">
-              {state.detail.title}
+              {state.post.title}
             </Text>
-            <Text>{state.detail.body}</Text>
+            <Text>{state.post.body}</Text>
           </View>
-          <PostComments comments={state.detail.comments} />
+          <PostComments comments={state.comments} />
         </>
       );
   }

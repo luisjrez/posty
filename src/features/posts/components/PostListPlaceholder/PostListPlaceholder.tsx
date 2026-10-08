@@ -8,7 +8,7 @@ import { styles } from './PostListPlaceholder.styles';
 import type { PostListPlaceholderProps } from './PostListPlaceholder.types';
 
 // What the list shows in place of rows: the first load, its failure, or no matches.
-export function PostListPlaceholder({ state, emptyMessage }: PostListPlaceholderProps) {
+export function PostListPlaceholder({ state, emptyMessage, emptyHint }: PostListPlaceholderProps) {
   switch (state.status) {
     case 'loading':
       return <PostListSkeleton />;
@@ -23,6 +23,6 @@ export function PostListPlaceholder({ state, emptyMessage }: PostListPlaceholder
         </View>
       );
     case 'ready':
-      return <EmptyState title={emptyMessage} />;
+      return <EmptyState title={emptyMessage} {...(emptyHint ? { message: emptyHint } : {})} />;
   }
 }

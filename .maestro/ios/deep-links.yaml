@@ -13,31 +13,43 @@ env:
 # Cold start: the app is closed when the link arrives.
 - stopApp
 - openLink: ${SCHEME}://posts/6
+# iOS asks before opening a custom scheme; accept it when it does.
+- tapOn:
+    text: 'Open'
+    optional: true
 - extendedWaitUntil:
     visible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
     timeout: 30000
 - takeScreenshot: deep-link-cold
 # Back lands on the Posts list kept underneath, instead of leaving the app.
-# iOS has no system back; the edge swipe is the native gesture for it.
-- swipe:
-    start: 1%, 50%
-    end: 80%, 50%
+# iOS has no system back. The header's back button is labelled like the tab ("Posts"), so
+# a text match is ambiguous; tap where it sits instead.
+- tapOn:
+    point: 12%, 8%
 - extendedWaitUntil:
     visible: 'sunt aut facere.*'
     timeout: 15000
 # Warm start: the app is open when a Favorites link arrives.
 - openLink: ${SCHEME}://favorites/posts/6
+# iOS asks before opening a custom scheme; accept it when it does.
+- tapOn:
+    text: 'Open'
+    optional: true
 - extendedWaitUntil:
     visible: 'in deleniti sunt provident soluta ratione veniam quam praesentium'
     timeout: 15000
-# iOS has no system back; the edge swipe is the native gesture for it.
-- swipe:
-    start: 1%, 50%
-    end: 80%, 50%
+# iOS has no system back. The header's back button is labelled like the tab ("Posts"), so
+# a text match is ambiguous; tap where it sits instead.
+- tapOn:
+    point: 12%, 8%
 - extendedWaitUntil:
     visible: 'No favorites yet'
     timeout: 15000
 - openLink: ${SCHEME}://posts/abc
+# iOS asks before opening a custom scheme; accept it when it does.
+- tapOn:
+    text: 'Open'
+    optional: true
 - extendedWaitUntil:
     visible: 'Post not found'
     timeout: 15000

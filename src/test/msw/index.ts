@@ -1,2 +1,2 @@
-export { API_URL, handlers, seedPosts } from './handlers';
+export { API_URL, handlers, seedComments, seedPosts } from './handlers';
 export { server } from './server';

@@ -44,3 +44,25 @@ describe('postsApi.list', () => {
     expect(error).toMatchObject({ kind: 'parse' });
   });
 });
+
+describe('postsApi.detail', () => {
+  it('requests the Post with its Comments embedded in one call', async () => {
+    let embed: string | null = null;
+    server.events.on('request:start', ({ request }) => {
+      embed = new URL(request.url).searchParams.get('_embed');
+    });
+
+    const detail = await postsApi.detail({ id: 2 });
+
+    expect(embed).toBe('comments');
+    expect(detail.title).toBe('Post 2');
+    expect(detail.comments.map((comment) => comment.postId)).toEqual([2, 2]);
+  });
+
+  it('maps a missing Post to a 404 ApiError', async () => {
+    await expect(postsApi.detail({ id: 999 })).rejects.toMatchObject({
+      kind: 'http',
+      status: 404,
+    });
+  });
+});

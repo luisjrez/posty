@@ -18,6 +18,10 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
 
+export function isNotFoundError(error: unknown): boolean {
+  return isApiError(error) && error.kind === 'http' && error.status === 404;
+}
+
 const TIMEOUT_CODES = new Set<string | undefined>([AxiosError.ECONNABORTED, AxiosError.ETIMEDOUT]);
 
 export function toApiError(error: unknown): ApiError {

@@ -8,16 +8,18 @@ name: Posts list · search narrows results and scroll paginates
     visible: 'sunt aut facere.*'
     timeout: 30000
 # Search first: the header search bar is only visible while the list is at the top. iOS may
-# start with it tucked under the large title, so pull the list down a bit to reveal it.
-- swipe:
-    start: 50%, 35%
-    end: 50%, 50%
+# start with it tucked under the large title; scrolling up reveals it, retrying until it shows.
+- scrollUntilVisible:
+    element: 'Search posts'
+    direction: UP
 - tapOn: 'Search posts'
 - inputText: 'dolorem eum'
+# The match is already on the unfiltered list, so wait for a non-match to go: that is the
+# filtered response landing, not the old list.
 - extendedWaitUntil:
-    visible: 'dolorem eum magni eos aperiam quia'
+    notVisible: 'sunt aut facere.*'
     timeout: 15000
-- assertNotVisible: 'sunt aut facere.*'
+- assertVisible: 'dolorem eum magni eos aperiam quia'
 - takeScreenshot: posts-search
 # Cancelling restores the full list; reaching Post 21 (filtered out by the search and the
 # first one of page 2) proves both the restore and that the next page was fetched.

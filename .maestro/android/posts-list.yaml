@@ -19,9 +19,11 @@ name: Posts list · scroll paginates and search narrows results
 # Android keeps the search action in the toolbar while scrolling, so no relaunch is needed.
 - tapOn: 'Search'
 - inputText: 'dolorem eum'
+# The match is already on the unfiltered list, so wait for a non-match to go: that is the
+# filtered response landing, not the old list.
 - extendedWaitUntil:
-    visible: 'dolorem eum magni eos aperiam quia'
+    notVisible: 'asperiores ea ipsam voluptatibus.*'
     timeout: 15000
-- assertNotVisible: 'asperiores ea ipsam voluptatibus.*'
+- assertVisible: 'dolorem eum magni eos aperiam quia'
 - takeScreenshot: posts-search
 - stopRecording

@@ -1,0 +1,11 @@
+appId: ${APP_ID}
+name: Smoke · app launches and shows Posts
+---
+- launchApp:
+    clearState: true
+- startRecording: ${MAESTRO_FILENAME}
+- extendedWaitUntil:
+    visible: 'sunt aut facere.*'
+    timeout: 30000
+- takeScreenshot: posts
+- stopRecording

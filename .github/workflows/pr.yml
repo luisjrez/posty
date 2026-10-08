@@ -3,9 +3,11 @@ name: PR
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 concurrency:
-  group: pr-${{ github.event.pull_request.number }}
+  group: pr-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -45,7 +47,7 @@ jobs:
       contents: read
       pull-requests: write
     outputs:
-      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-id: ${{ steps.eas.outputs.build-id }}
       build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
     steps:
       - name: Checkout
@@ -78,7 +80,7 @@ jobs:
       contents: read
       pull-requests: write
     outputs:
-      build-id: ${{ steps.eas.outputs.build-id || steps.local.outputs.build-id }}
+      build-id: ${{ steps.eas.outputs.build-id }}
       build-url: ${{ steps.eas.outputs.build-url || steps.local.outputs.build-url }}
     steps:
       - name: Checkout
@@ -101,3 +103,124 @@ jobs:
           platform: android
           expo-token: ${{ secrets.EXPO_TOKEN }}
           github-token: ${{ github.token }}
+
+  e2e-ios:
+    name: E2E iOS
+    needs: build-ios
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      MAESTRO_VERSION: 2.11.0
+      APP_ID: com.luisjuarez.posty.stage
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download build
+        id: build
+        uses: ./.github/actions/download-build
+        with:
+          platform: ios
+          build-id: ${{ needs.build-ios.outputs.build-id }}
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Boot simulator and install app
+        run: |
+          udid=$(xcrun simctl list devices available --json | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          xcrun simctl install "$udid" "${{ steps.build.outputs.path }}"
+
+      - name: Run Maestro flows
+        run: maestro test .maestro/ios -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
+
+      - name: Upload Maestro results
+        id: results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-ios
+          path: build/maestro
+          if-no-files-found: ignore
+
+      - name: Report flows with videos
+        if: always() && hashFiles('build/maestro/report.xml') != ''
+        uses: ./.github/actions/maestro-report
+        with:
+          platform: ios
+          results-dir: build/maestro
+          report: build/maestro/report.xml
+          results-url: ${{ steps.results.outputs.artifact-url }}
+
+  e2e-android:
+    name: E2E Android
+    needs: build-android
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      MAESTRO_VERSION: 2.11.0
+      APP_ID: com.luisjuarez.posty.stage
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download build
+        id: build
+        uses: ./.github/actions/download-build
+        with:
+          platform: android
+          build-id: ${{ needs.build-android.outputs.build-id }}
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Run Maestro flows on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          APK_PATH: ${{ steps.build.outputs.path }}
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: |
+            adb install "$APK_PATH"
+            maestro test .maestro/android -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
+
+      - name: Upload Maestro results
+        id: results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-android
+          path: build/maestro
+          if-no-files-found: ignore
+
+      - name: Report flows with videos
+        if: always() && hashFiles('build/maestro/report.xml') != ''
+        uses: ./.github/actions/maestro-report
+        with:
+          platform: android
+          results-dir: build/maestro
+          report: build/maestro/report.xml
+          results-url: ${{ steps.results.outputs.artifact-url }}

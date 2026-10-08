@@ -1,5 +1,5 @@
 name: Local staging build
-description: Repacks the staging app stored on EAS for this fingerprint, or builds it on the runner and stores it, then reports it on the pull request
+description: Repacks the staging app cached or stored on EAS for this fingerprint, or builds it on the runner and caches it, then reports it on the pull request
 
 inputs:
   platform:
@@ -14,10 +14,8 @@ inputs:
     required: true
 
 outputs:
-  build-id:
-    value: ${{ steps.store.outputs.build_id }}
   build-url:
-    value: ${{ steps.store.outputs.build_url || steps.artifact.outputs.artifact-url }}
+    value: ${{ steps.artifact.outputs.artifact-url }}
   mode:
     value: ${{ steps.lookup.outputs.mode }}
 
@@ -61,13 +59,31 @@ runs:
         fi
         echo "hash=$(jq -r .hash <<<"$result")" >> "$GITHUB_OUTPUT"
 
-    - name: Download build for this fingerprint
+    - name: Restore native build for this fingerprint
+      id: cache
+      uses: actions/cache/restore@v6
+      with:
+        path: .native
+        key: native-${{ inputs.platform }}-${{ steps.fingerprint.outputs.hash }}
+
+    - name: Choose build mode
       id: lookup
       shell: bash
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
       run: |
-        if source=$(bunx eas-cli build:download --fingerprint ${{ steps.fingerprint.outputs.hash }} --platform ${{ inputs.platform }} --json | jq -er .path); then
+        mkdir -p .native
+        if [ "${{ steps.cache.outputs.cache-hit }}" != true ]; then
+          if eas_path=$(bunx eas-cli build:download --fingerprint ${{ steps.fingerprint.outputs.hash }} --platform ${{ inputs.platform }} --json | jq -er .path); then
+            case "$eas_path" in
+              *.tar.gz) tar -xzf "$eas_path" -C .native ;;
+              *) cp -R "$eas_path" .native/ ;;
+            esac
+            echo "seeded=true" >> "$GITHUB_OUTPUT"
+          fi
+        fi
+        source=$(find .native -maxdepth 1 \( -name '*.app' -o -name '*.apk' \) | head -n1)
+        if [ -n "$source" ]; then
           echo "source=$source" >> "$GITHUB_OUTPUT"
           echo "mode=repack" >> "$GITHUB_OUTPUT"
         else
@@ -113,16 +129,23 @@ runs:
         bunx eas-cli build --local --platform ${{ inputs.platform }} --profile staging --non-interactive --output ".build/app.$ext"
         echo "ARTIFACT=.build/app.$ext" >> "$GITHUB_ENV"
 
-    - name: Store native app on EAS
-      id: store
+    - name: Keep native build for repacks
       if: steps.lookup.outputs.mode == 'build'
       shell: bash
-      env:
-        EXPO_TOKEN: ${{ inputs.expo-token }}
       run: |
-        build_url=$(bunx eas-cli upload --platform ${{ inputs.platform }} --build-path "$ARTIFACT" --fingerprint ${{ steps.fingerprint.outputs.hash }} --json | jq -r .url)
-        echo "build_url=$build_url" >> "$GITHUB_OUTPUT"
-        echo "build_id=${build_url##*/}" >> "$GITHUB_OUTPUT"
+        mkdir -p .native
+        if [ "${{ inputs.platform }}" = ios ]; then
+          tar -xzf "$ARTIFACT" -C .native
+        else
+          cp "$ARTIFACT" .native/app.apk
+        fi
+
+    - name: Cache native build for this fingerprint
+      if: steps.lookup.outputs.mode == 'build' || steps.lookup.outputs.seeded == 'true'
+      uses: actions/cache/save@v6
+      with:
+        path: .native
+        key: native-${{ inputs.platform }}-${{ steps.fingerprint.outputs.hash }}
 
     - name: Upload app artifact
       id: artifact
@@ -144,7 +167,7 @@ runs:
 
           | Runner | Mode | Fingerprint | Artifact |
           | --- | --- | --- | --- |
-          | GitHub | ${{ steps.lookup.outputs.mode }} | `${{ steps.fingerprint.outputs.hash }}` | ${{ steps.store.outputs.build_url || steps.artifact.outputs.artifact-url }} |
+          | GitHub | ${{ steps.lookup.outputs.mode }} | `${{ steps.fingerprint.outputs.hash }}` | ${{ steps.artifact.outputs.artifact-url }} |
       run: |
         endpoint="repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
         comment_id=$(gh api "$endpoint" --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)

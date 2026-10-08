@@ -6,15 +6,15 @@ import { useLocalSearchParams } from 'expo-router';
 import { Text } from '@/shared/components';
 import { API_URL, renderScreenInStack, server, typeInHeaderSearch } from '@/test';
 
-import { PostsScreen } from './PostsScreen';
+import { PostsListController } from './PostsListController';
 
 function failPostsRequests() {
   server.use(http.get(`${API_URL}/posts`, () => new HttpResponse(null, { status: 500 })));
 }
 
-// Routes render without props; the screen's props type forbids any.
+// Routes render without props; the controller's props type forbids any.
 function PostsRoute() {
-  return <PostsScreen />;
+  return <PostsListController />;
 }
 
 function DetailStub() {
@@ -22,7 +22,7 @@ function DetailStub() {
   return <Text>Detail of {id}</Text>;
 }
 
-describe('PostsScreen', () => {
+describe('PostsListController', () => {
   it('shows a skeleton while the first page loads', async () => {
     await renderScreenInStack(PostsRoute);
 
@@ -115,8 +115,9 @@ describe('PostsScreen', () => {
     await typeInHeaderSearch('po');
     await typeInHeaderSearch('post 4');
 
-    await screen.findByText('Post 45');
-    expect(searches).toEqual([null, 'post 4']);
+    await waitFor(() => expect(screen.queryByText('Post 1')).not.toBeOnTheScreen());
+    // Unfiltered requests are page loads of the initial list; only one search request goes out.
+    expect(searches.filter((search) => search !== null)).toEqual(['post 4']);
   });
 
   it('treats special characters in the search literally', async () => {
@@ -129,16 +130,17 @@ describe('PostsScreen', () => {
   });
 
   it('pulls to refresh the list', async () => {
-    let requests = 0;
-    server.events.on('request:start', () => {
-      requests += 1;
-    });
+    const pages: (string | null)[] = [];
     await renderScreenInStack(PostsRoute);
-    await screen.findByText('Post 1');
+    // FlashList keeps paging while its content is shorter than the viewport; wait for the end.
+    await screen.findByText("You've reached the end");
+    server.events.on('request:start', ({ request }) => {
+      pages.push(new URL(request.url).searchParams.get('_page'));
+    });
 
     await fireEvent(screen.getByTestId('posts-list'), 'refresh');
 
-    await waitFor(() => expect(requests).toBe(2));
+    await waitFor(() => expect(pages).toContain('1'));
     expect(screen.getByText('Post 1')).toBeOnTheScreen();
   });
 });

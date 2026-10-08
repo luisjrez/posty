@@ -136,6 +136,31 @@ Every pull request to `main` (and every push to it) runs on GitHub Actions:
 3. Per platform: install that artifact on an emulator (Ubuntu) or simulator (macOS) and run the
    Maestro flows; videos and JUnit reports are uploaded and summarized on the PR.
 
+### Known CI issues
+
+The end-to-end jobs run on GitHub-hosted runners, and they have been unreliable for reasons
+outside the app. Pull requests #6 to #10 (Post detail, Favorites, the Favorites tab, deep links and
+this README) were merged on purpose without waiting for green end-to-end checks; each feature's
+Maestro flows were run on the iOS simulator against a Release staging build before merging, and
+on Android only in CI. What we found, and what was done about it:
+
+- **Android emulator dropped its connection mid-run.** On the `google_apis` system image, Google
+  Play services update system modules a few minutes after boot, which restarted adb (`device
+offline`) between flows. The job now uses the `default` image, which has no Play services (the
+  app needs none); after that change the Android flows passed in every run that started. One later
+  run failed before starting because the runner downloaded a corrupt system image.
+- **The CI emulator's screen is small (320×640).** Assertions on content below the fold failed;
+  flows now scroll to it.
+- **iOS simulators on hosted macOS runners are slow and sometimes never start Maestro's driver.**
+  We saw jobs never get a macOS runner at all (capacity), the driver time out after several
+  minutes, and simple flows take two minutes instead of seconds. The job now pins Xcode 26.5, runs
+  on the newest runtime's iPhone 17 Pro (the setup that is stable in a sibling project), opens the
+  app once to absorb the simulator's first-boot work, and waits up to four minutes for the driver.
+  These changes have not yet been proven with three consecutive green runs, so an iOS end-to-end
+  failure in CI should be read as likely infrastructure until its logs say otherwise.
+- **A timing bug in the search flow.** It waited for a result that was already on the unfiltered
+  list; it now waits for a non-matching Post to disappear.
+
 ## Architecture
 
 ```

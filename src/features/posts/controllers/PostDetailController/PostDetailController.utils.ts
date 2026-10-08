@@ -13,6 +13,8 @@ type DetailInput = {
   isNotFound: boolean;
   isError: boolean;
   isOnline: boolean;
+  /** When `detail` was fetched; offline it dates the notice. */
+  fetchedAt: number;
   /** The Favorite's saved copy, if this Post is one. */
   savedCopy: FavoriteSnapshot | undefined;
   onRetry: () => void;
@@ -26,13 +28,17 @@ export function detailState({
   isNotFound,
   isError,
   isOnline,
+  fetchedAt,
   savedCopy,
   onRetry,
 }: DetailInput): PostDetailState {
   if (isNotFound) return { status: 'notFound' };
   if (detail) {
     const { comments, ...post } = detail;
-    return { status: 'ready', post, comments };
+    // Offline, even freshly cached data can't be refreshed, so it is flagged like a saved copy.
+    return isOnline
+      ? { status: 'ready', post, comments }
+      : { status: 'ready', post, comments, offlineUpdatedAt: fetchedAt };
   }
   if (!isOnline && savedCopy) {
     return {

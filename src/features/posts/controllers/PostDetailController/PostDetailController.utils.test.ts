@@ -12,6 +12,7 @@ const base = {
   isNotFound: false,
   isError: false,
   isOnline: true,
+  fetchedAt: 5,
   savedCopy: undefined,
   onRetry,
 };
@@ -53,11 +54,12 @@ describe('detailState', () => {
     });
   });
 
-  it('prefers fetched data over the saved copy, even offline', () => {
+  it('prefers fetched data over the saved copy offline, flagged with its fetch time', () => {
     expect(detailState({ ...base, detail, isOnline: false, savedCopy })).toEqual({
       status: 'ready',
       post,
       comments,
+      offlineUpdatedAt: 5,
     });
   });
 

@@ -28,20 +28,22 @@ export function PostDetailController(_props: PostDetailControllerProps) {
   useSyncFavoriteSnapshots(snapshots, fetchedAt);
 
   // Offline, the heart works on the saved copy so a Favorite can still be removed.
-  const heart = snapshot ?? (isOnline ? undefined : savedCopy);
+  const toggleTarget = snapshot ?? (isOnline ? undefined : savedCopy);
 
   const handleRetry = useCallback(() => void refetch(), [refetch]);
 
   return (
     <>
-      {heart ? (
+      {toggleTarget ? (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.View>
-            <FavoriteToggle {...heart} placement="header" />
+            <FavoriteToggle {...toggleTarget} placement="header" />
           </Stack.Toolbar.View>
         </Stack.Toolbar>
       ) : null}
-      <PostDetail state={detailState({ ...detail, isOnline, savedCopy, onRetry: handleRetry })} />
+      <PostDetail
+        state={detailState({ ...detail, isOnline, fetchedAt, savedCopy, onRetry: handleRetry })}
+      />
     </>
   );
 }

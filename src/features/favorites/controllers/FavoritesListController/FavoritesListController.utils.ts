@@ -3,10 +3,11 @@ import type { Post } from '@/features/posts';
 import type { FavoriteSnapshot } from '../../model';
 
 // Local and case-insensitive: Favorites are few and must be searchable offline.
-export function matchingPosts(snapshots: readonly FavoriteSnapshot[], search: string): Post[] {
-  const term = search.trim().toLowerCase();
+// `term` is the already-trimmed search.
+export function matchingPosts(snapshots: readonly FavoriteSnapshot[], term: string): Post[] {
+  const needle = term.toLowerCase();
   const posts = snapshots.map((snapshot) => snapshot.post);
-  return term ? posts.filter((post) => post.title.toLowerCase().includes(term)) : posts;
+  return needle ? posts.filter((post) => post.title.toLowerCase().includes(needle)) : posts;
 }
 
 // The oldest copy bounds how stale the screen can be, so that is the time the notice shows.
@@ -15,7 +16,11 @@ export function oldestSync(snapshots: readonly FavoriteSnapshot[]): number | und
   return Math.min(...snapshots.map((snapshot) => snapshot.syncedAt));
 }
 
-export function emptyMessage(search: string): string {
-  const term = search.trim();
-  return term ? `No favorites match "${term}"` : 'No favorites yet';
+const EMPTY_HINT = 'Tap the heart on a post to save it here.';
+
+// Without a search the list is empty because nothing is saved yet, so it says how to save.
+export function emptyState(term: string): { message: string; hint: string | undefined } {
+  return term
+    ? { message: `No favorites match "${term}"`, hint: undefined }
+    : { message: 'No favorites yet', hint: EMPTY_HINT };
 }

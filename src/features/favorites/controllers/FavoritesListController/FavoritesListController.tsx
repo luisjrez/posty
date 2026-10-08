@@ -13,9 +13,8 @@ import { useFavoriteSnapshots } from '../../hooks/useFavoriteSnapshots';
 import { FavoriteToggle } from '../FavoriteToggle';
 
 import type { FavoritesListControllerProps } from './FavoritesListController.types';
-import { emptyMessage, matchingPosts, oldestSync } from './FavoritesListController.utils';
+import { emptyState, matchingPosts, oldestSync } from './FavoritesListController.utils';
 
-const EMPTY_HINT = 'Tap the heart on a post to save it here.';
 type ReadyState = Extract<PostListState, { status: 'ready' }>;
 
 const IDLE_FOOTER: ReadyState['footer'] = { status: 'idle' };
@@ -39,7 +38,11 @@ export function FavoritesListController(_props: FavoritesListControllerProps) {
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const isOnline = useIsOnline();
   const snapshots = useFavoriteSnapshots();
-  const ids = useMemo(() => snapshots.map((snapshot) => snapshot.post.id), [snapshots]);
+  // Sorted so the query key depends on which Posts are saved, not on the order they were saved in.
+  const ids = useMemo(
+    () => snapshots.map((snapshot) => snapshot.post.id).sort((a, b) => a - b),
+    [snapshots],
+  );
   const { refetch } = useFavoritePosts(ids);
 
   const searchBar = useMemo(() => searchBarOptions(theme, 'Search favorites'), [theme]);
@@ -61,7 +64,9 @@ export function FavoritesListController(_props: FavoritesListControllerProps) {
     }
   }, [refetch]);
 
-  const posts = useMemo(() => matchingPosts(snapshots, search), [snapshots, search]);
+  const term = search.trim();
+  const posts = useMemo(() => matchingPosts(snapshots, term), [snapshots, term]);
+  const empty = emptyState(term);
   const syncedAt = oldestSync(snapshots);
 
   const state: PostListState = {
@@ -82,8 +87,8 @@ export function FavoritesListController(_props: FavoritesListControllerProps) {
       />
       <PostList
         state={state}
-        emptyMessage={emptyMessage(search)}
-        emptyHint={search.trim() ? undefined : EMPTY_HINT}
+        emptyMessage={empty.message}
+        emptyHint={empty.hint}
         header={!isOnline && syncedAt !== undefined ? <OfflineNotice updatedAt={syncedAt} /> : null}
         onPressPost={openPost}
         renderAccessory={renderFavoriteToggle}

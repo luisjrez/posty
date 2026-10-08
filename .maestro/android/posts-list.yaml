@@ -1,0 +1,29 @@
+appId: ${APP_ID}
+name: Posts list · scroll paginates and search narrows results
+---
+- launchApp:
+    clearState: true
+- startRecording: ${MAESTRO_FILENAME}
+- extendedWaitUntil:
+    visible: 'sunt aut facere.*'
+    timeout: 30000
+# Post 21 is the first one of page 2, so seeing it proves the next page was fetched.
+- scrollUntilVisible:
+    element: 'asperiores ea ipsam voluptatibus.*'
+    direction: DOWN
+    timeout: 30000
+- takeScreenshot: posts-page-2
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: 'sunt aut facere.*'
+    timeout: 30000
+# Android shows the search bar as a header action until it is tapped.
+- tapOn: 'Search'
+- inputText: 'dolorem eum'
+- extendedWaitUntil:
+    visible: 'dolorem eum magni eos aperiam quia'
+    timeout: 15000
+- assertNotVisible: 'sunt aut facere.*'
+- takeScreenshot: posts-search
+- stopRecording

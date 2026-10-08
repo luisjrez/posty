@@ -1,18 +1,26 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-// A 36pt circle keeps the pressed highlight inside a 44pt header bar; the hit slop brings the
-// touch target back up to the 44pt minimum.
-const SIZE = 36;
+// On cards, a 36pt circle around the 22pt icon; its hit slop brings the target to 44pt.
+const CARD_SIZE = 36;
+export const ICON_SIZE = 22;
 
 export const styles = StyleSheet.create((theme) => ({
-  button: {
-    width: SIZE,
-    height: SIZE,
+  card: {
+    width: CARD_SIZE,
+    height: CARD_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: SIZE / 2,
+    borderRadius: CARD_SIZE / 2,
   },
-  pressed: {
+  cardPressed: {
     backgroundColor: theme.colors.bg.muted,
+  },
+  // Flush with the icon, like native bar buttons, which also dim instead of showing a background.
+  header: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+  },
+  headerPressed: {
+    opacity: 0.4,
   },
 }));

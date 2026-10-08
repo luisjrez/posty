@@ -26,7 +26,7 @@ export function PostDetailController(_props: PostDetailControllerProps) {
       {snapshot ? (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.View>
-            <FavoriteToggle {...snapshot} />
+            <FavoriteToggle {...snapshot} placement="header" />
           </Stack.Toolbar.View>
         </Stack.Toolbar>
       ) : null}

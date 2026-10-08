@@ -2,7 +2,7 @@ import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { Pressable, type PressableStateCallbackType } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { styles } from './FavoriteButton.styles';
+import { ICON_SIZE, styles } from './FavoriteButton.styles';
 import type { FavoriteButtonProps } from './FavoriteButton.types';
 
 const HEART = {
@@ -15,14 +15,23 @@ const HEART_FILLED = {
   android: 'favorite',
   web: 'favorite',
 } satisfies SymbolViewProps['name'];
-const HIT_SLOP = 4; // (44 - 36) / 2
-const ICON_SIZE = 22;
+// Each placement keeps the touch target at 44pt: (44 - 36) / 2 on cards, (44 - 22) / 2 in headers.
+const HIT_SLOP = { card: 4, header: 11 };
 
-function buttonStyle({ pressed }: PressableStateCallbackType) {
-  return [styles.button, pressed && styles.pressed];
+function cardStyle({ pressed }: PressableStateCallbackType) {
+  return [styles.card, pressed && styles.cardPressed];
 }
 
-export function FavoriteButton({ isFavorite, onPress, testID }: FavoriteButtonProps) {
+function headerStyle({ pressed }: PressableStateCallbackType) {
+  return [styles.header, pressed && styles.headerPressed];
+}
+
+export function FavoriteButton({
+  isFavorite,
+  onPress,
+  testID,
+  placement = 'card',
+}: FavoriteButtonProps) {
   const { theme } = useUnistyles();
 
   return (
@@ -32,9 +41,9 @@ export function FavoriteButton({ isFavorite, onPress, testID }: FavoriteButtonPr
       accessibilityLabel="Favorite"
       // "Selected" is how screen readers announce a saved Post.
       accessibilityState={{ selected: isFavorite }}
-      hitSlop={HIT_SLOP}
+      hitSlop={HIT_SLOP[placement]}
       onPress={onPress}
-      style={buttonStyle}
+      style={placement === 'header' ? headerStyle : cardStyle}
     >
       <SymbolView
         name={isFavorite ? HEART_FILLED : HEART}

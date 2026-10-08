@@ -1,2 +1,2 @@
 export { FavoriteButton } from './FavoriteButton';
-export type { FavoriteButtonProps } from './FavoriteButton.types';
+export type { FavoriteButtonPlacement, FavoriteButtonProps } from './FavoriteButton.types';

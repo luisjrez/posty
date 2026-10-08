@@ -7,7 +7,7 @@ import { useToggleFavorite } from '../../hooks/useToggleFavorite';
 import type { FavoriteToggleProps } from './FavoriteToggle.types';
 
 // Each heart subscribes to its own Post's entry, so toggling one re-renders only that heart.
-export function FavoriteToggle({ post, comments }: FavoriteToggleProps) {
+export function FavoriteToggle({ post, comments, placement }: FavoriteToggleProps) {
   const isFavorite = useIsFavorite(post.id);
   const toggle = useToggleFavorite();
   const handlePress = useCallback(() => toggle({ post, comments }), [toggle, post, comments]);
@@ -17,6 +17,7 @@ export function FavoriteToggle({ post, comments }: FavoriteToggleProps) {
       isFavorite={isFavorite}
       onPress={handlePress}
       testID={`favorite-toggle-${post.id}`}
+      {...(placement ? { placement } : {})}
     />
   );
 }

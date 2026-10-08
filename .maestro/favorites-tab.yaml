@@ -1,0 +1,24 @@
+name: Favorites tab · a saved Post appears there and its heart removes it
+appId: ${APP_ID}
+env:
+  # Each variant has its own scheme; CI runs the staging build.
+  SCHEME: posty-stage
+# Each flow records its own video (the CI report links one per flow); onFlowComplete stops it
+# whether the flow passed or failed.
+onFlowStart:
+  - startRecording: ${MAESTRO_FILENAME}
+onFlowComplete:
+  - stopRecording
+---
+- runFlow: launch/release.yaml
+- tapOn:
+    id: 'post-2-favorite'
+- tapOn: 'Favorites'
+- extendedWaitUntil:
+    visible:
+      id: 'post-2'
+    timeout: 5000
+- takeScreenshot: favorites-tab
+- tapOn:
+    id: 'post-2-favorite'
+- assertVisible: 'No favorites yet'

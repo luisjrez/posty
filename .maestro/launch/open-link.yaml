@@ -1,0 +1,15 @@
+# Opens a deep link and gets past the system prompt iOS may show before handing it to the app.
+appId: ${APP_ID}
+---
+- openLink: ${LINK}
+# Looking for an element that is not there costs Maestro about 7 seconds, so the check only runs
+# where the prompt can appear.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible: 'Open'
+          commands:
+            - tapOn: 'Open'

@@ -1,0 +1,9 @@
+# Restarts the app without clearing its state, so whatever it persisted is read back from disk.
+appId: ${APP_ID}
+---
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'post-1'
+    timeout: 20000

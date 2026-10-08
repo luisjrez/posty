@@ -16,7 +16,7 @@ export function FavoriteToggle({ post, comments, placement }: FavoriteToggleProp
     <FavoriteButton
       isFavorite={isFavorite}
       onPress={handlePress}
-      testID={`favorite-toggle-${post.id}`}
+      testID={`post-${post.id}-favorite`}
       {...(placement ? { placement } : {})}
     />
   );

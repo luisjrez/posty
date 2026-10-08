@@ -1,0 +1,39 @@
+name: Posts search · typing narrows the list to the server's matches
+appId: ${APP_ID}
+env:
+  # Each variant has its own scheme; CI runs the staging build.
+  SCHEME: posty-stage
+# Each flow records its own video (the CI report links one per flow); onFlowComplete stops it
+# whether the flow passed or failed.
+onFlowStart:
+  - startRecording: ${MAESTRO_FILENAME}
+onFlowComplete:
+  - stopRecording
+---
+- runFlow: launch/release.yaml
+# iOS can start with the header search bar tucked under the large title; scrolling up shows it.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - scrollUntilVisible:
+          element: 'Search posts'
+          direction: UP
+# Android keeps the search behind an action button in the toolbar.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: 'Search'
+- tapOn: '\s*Search posts'
+# Only Post 6's title contains this fragment on jsonplaceholder.
+- inputText: 'dolorem eum'
+# Post 6 is already on the unfiltered list, so Post 1 leaving is what proves the filtered
+# response landed.
+- extendedWaitUntil:
+    notVisible:
+      id: 'post-1'
+    timeout: 10000
+- assertVisible:
+    id: 'post-6'
+- takeScreenshot: posts-search

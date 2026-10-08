@@ -104,7 +104,7 @@ describe('FavoritesListController', () => {
     await renderScreenInStack(FavoritesRoute);
     await screen.findByText('Post 7');
 
-    await fireEvent.press(screen.getByTestId('favorite-toggle-7'));
+    await fireEvent.press(screen.getByTestId('post-7-favorite'));
 
     await waitFor(() => expect(screen.queryByText('Post 7')).not.toBeOnTheScreen());
     expect(Object.keys(useFavoritesStore.getState().favorites)).toEqual(['3']);

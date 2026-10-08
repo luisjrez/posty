@@ -164,7 +164,7 @@ jobs:
           xcrun simctl terminate "$udid" "$APP_ID"
 
       - name: Run Maestro flows
-        run: maestro test .maestro/ios -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
+        run: maestro test .maestro -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
 
       - name: Upload Maestro results
         id: results
@@ -230,6 +230,10 @@ jobs:
           target: default
           # The device Postify's stable flows run on; the default profile is a 320x640 screen.
           profile: pixel_7
+          # Pinned: the runner otherwise installs the latest emulator, whose download arrived
+          # corrupt ("Error on ZipFile unknown archive") and failed runs before any flow started.
+          # This is the build the earlier green runs used.
+          emulator-build: 16428233
           disable-animations: true
           # Each line runs as its own shell command, so keep them single-line.
           # A freshly booted emulator's launcher can stop responding and cover the app with its
@@ -238,7 +242,7 @@ jobs:
             adb wait-for-device
             adb shell pm disable-user --user 0 com.android.launcher3
             adb install "$APK_PATH"
-            maestro test .maestro/android -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
+            maestro test .maestro -e APP_ID=$APP_ID --format junit --output build/maestro/report.xml --test-output-dir build/maestro
 
       - name: Upload Maestro results
         id: results

@@ -18,6 +18,8 @@ export function PostCard({ post, onPress, accessory }: PostCardProps) {
     // child, because nested buttons are merged into one element by screen readers.
     <View style={styles.container}>
       <Pressable
+        // Stable across platforms and content, so E2E flows find a Post by id, not by its text.
+        testID={`post-${post.id}`}
         accessibilityRole="button"
         // The title names the card; without it screen readers would read title and body as one label.
         accessibilityLabel={post.title}

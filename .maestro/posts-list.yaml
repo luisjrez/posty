@@ -1,0 +1,23 @@
+name: Posts list · scrolling loads the next page
+appId: ${APP_ID}
+env:
+  # Each variant has its own scheme; CI runs the staging build.
+  SCHEME: posty-stage
+# Each flow records its own video (the CI report links one per flow); onFlowComplete stops it
+# whether the flow passed or failed.
+onFlowStart:
+  - startRecording: ${MAESTRO_FILENAME}
+onFlowComplete:
+  - stopRecording
+---
+- runFlow: launch/release.yaml
+# Post 25 lives on the second page (20 per page), so seeing it proves scrolling loaded more.
+# Every swipe costs Maestro a fresh view hierarchy, so faster swipes than the default reach it
+# sooner; a CI simulator needs most of the minute.
+- scrollUntilVisible:
+    element:
+      id: 'post-25'
+    direction: DOWN
+    speed: 60
+    timeout: 60000
+- takeScreenshot: posts-page-2

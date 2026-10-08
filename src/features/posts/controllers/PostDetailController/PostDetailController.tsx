@@ -10,7 +10,7 @@ import { parsePostId } from './PostDetailController.utils';
 
 // Turns the route param and the detail query into one view state; PostDetail never fetches.
 export function PostDetailController(_props: PostDetailControllerProps) {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams();
   const { post, comments, isNotFound, isError, refetch } = usePostDetail(parsePostId(id));
 
   const handleRetry = useCallback(() => void refetch(), [refetch]);

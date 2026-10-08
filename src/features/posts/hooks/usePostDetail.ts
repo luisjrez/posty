@@ -4,12 +4,12 @@ import {
   type InfiniteData,
   type QueryClient,
 } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 
-import { isApiError, type Paginated } from '@/shared/api';
+import { isNotFoundError, type Paginated } from '@/shared/api';
 
 import { postDetailOptions, postKeys } from '../api/posts.queries';
-import type { Post, PostId } from '../model';
+import type { Post, PostDetail, PostId } from '../model';
 
 // Any list page (whatever its search) that already holds the Post can paint the detail
 // while its Comments load.
@@ -26,21 +26,19 @@ function findListedPost(queryClient: QueryClient, id: PostId): Post | undefined 
 
 export function usePostDetail(id: PostId | null) {
   const queryClient = useQueryClient();
-  const query = useQuery(postDetailOptions(id));
-  // Read once per id: the list cache only matters until the detail itself arrives.
-  const listedPost = useMemo(
-    () => (id === null ? undefined : findListedPost(queryClient, id)),
-    [queryClient, id],
-  );
-
-  const isNotFound =
-    id === null ||
-    (isApiError(query.error) && query.error.kind === 'http' && query.error.status === 404);
+  const placeholderData = useCallback((): PostDetail | undefined => {
+    if (id === null) return undefined;
+    const post = findListedPost(queryClient, id);
+    // The list has no Comments; isPlaceholderData tells the screen they're still loading.
+    return post && { ...post, comments: [] };
+  }, [queryClient, id]);
+  const query = useQuery({ ...postDetailOptions(id), placeholderData });
 
   return {
-    post: query.data ?? listedPost,
-    comments: query.data?.comments,
-    isNotFound,
+    // A failed fetch drops the placeholder; keep the listed Post up so only Comments show the error.
+    post: query.data ?? (query.isError ? placeholderData() : undefined),
+    comments: query.isPlaceholderData ? undefined : query.data?.comments,
+    isNotFound: id === null || isNotFoundError(query.error),
     isError: query.isError,
     refetch: query.refetch,
   };

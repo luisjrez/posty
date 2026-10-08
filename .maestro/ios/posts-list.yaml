@@ -1,0 +1,34 @@
+appId: ${APP_ID}
+name: Posts list · search narrows results and scroll paginates
+---
+- launchApp:
+    clearState: true
+- startRecording: ${MAESTRO_FILENAME}
+- extendedWaitUntil:
+    visible: 'sunt aut facere.*'
+    timeout: 30000
+# Search first: the header search bar is only visible while the list is at the top. iOS may
+# start with it tucked under the large title, so pull the list down a bit to reveal it.
+- swipe:
+    start: 50%, 35%
+    end: 50%, 50%
+- tapOn: 'Search posts'
+- inputText: 'dolorem eum'
+- extendedWaitUntil:
+    visible: 'dolorem eum magni eos aperiam quia'
+    timeout: 15000
+- assertNotVisible: 'sunt aut facere.*'
+- takeScreenshot: posts-search
+# Cancelling restores the full list; reaching Post 21 (filtered out by the search and the
+# first one of page 2) proves both the restore and that the next page was fetched.
+# iOS 26 labels the search bar's cancel button "Close"; earlier versions say "Cancel".
+- tapOn: 'Cancel|Close'
+- scrollUntilVisible:
+    element: 'asperiores ea ipsam voluptatibus.*'
+    direction: DOWN
+    # Twenty cards plus a page request is a long way on a slow CI emulator.
+    timeout: 60000
+    # FlashList reports cards partly clipped by the tab bar; half visible is enough here.
+    visibilityPercentage: 50
+- takeScreenshot: posts-page-2
+- stopRecording

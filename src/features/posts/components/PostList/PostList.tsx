@@ -14,6 +14,7 @@ import { keyExtractor } from './PostList.utils';
 // Start the next page about half a screen early so scrolling rarely reaches the footer.
 const END_REACHED_THRESHOLD = 0.5;
 const EMPTY: readonly Post[] = [];
+const MVCP_DISABLED = { disabled: true };
 
 function ItemSeparator() {
   return <View style={styles.separator} />;
@@ -46,6 +47,10 @@ export function PostList({ state, emptyMessage, onPressPost }: PostListProps) {
       onRefresh={isReady ? state.onRefresh : undefined}
       keyboardDismissMode="on-drag"
       contentInsetAdjustmentBehavior="automatic"
+      // On by default in FlashList v2: when the first page replaces the empty placeholder it
+      // shifts the offset to "keep" the placeholder in place, leaving the list scrolled off
+      // screen. Posts are only appended, so there is no position to preserve.
+      maintainVisibleContentPosition={MVCP_DISABLED}
       contentContainerStyle={styles.content}
     />
   );

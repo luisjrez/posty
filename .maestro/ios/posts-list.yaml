@@ -1,5 +1,5 @@
 appId: ${APP_ID}
-name: Posts list · scroll paginates and search narrows results
+name: Posts list · search narrows results and scroll paginates
 ---
 - launchApp:
     clearState: true
@@ -7,17 +7,7 @@ name: Posts list · scroll paginates and search narrows results
 - extendedWaitUntil:
     visible: 'sunt aut facere.*'
     timeout: 30000
-# Post 21 is the first one of page 2, so seeing it proves the next page was fetched.
-- scrollUntilVisible:
-    element: 'asperiores ea ipsam voluptatibus.*'
-    direction: DOWN
-    timeout: 30000
-- takeScreenshot: posts-page-2
-- stopApp
-- launchApp
-- extendedWaitUntil:
-    visible: 'sunt aut facere.*'
-    timeout: 30000
+# Search first: the header search bar is only visible while the list is at the top.
 - tapOn: 'Search posts'
 - inputText: 'dolorem eum'
 - extendedWaitUntil:
@@ -25,4 +15,18 @@ name: Posts list · scroll paginates and search narrows results
     timeout: 15000
 - assertNotVisible: 'sunt aut facere.*'
 - takeScreenshot: posts-search
+- tapOn: 'Cancel'
+# Cancelling restores the full list (keeping the scroll offset), so wait for a Post the
+# search had filtered out.
+- extendedWaitUntil:
+    visible: 'dolorem dolore est ipsam'
+    timeout: 15000
+# Post 21 is the first one of page 2, so seeing it proves the next page was fetched.
+- scrollUntilVisible:
+    element: 'asperiores ea ipsam voluptatibus.*'
+    direction: DOWN
+    timeout: 30000
+    # FlashList reports cards partly clipped by the tab bar; half visible is enough here.
+    visibilityPercentage: 50
+- takeScreenshot: posts-page-2
 - stopRecording

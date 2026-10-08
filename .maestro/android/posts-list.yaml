@@ -12,18 +12,15 @@ name: Posts list · scroll paginates and search narrows results
     element: 'asperiores ea ipsam voluptatibus.*'
     direction: DOWN
     timeout: 30000
+    # FlashList reports cards partly clipped by the tab bar; half visible is enough here.
+    visibilityPercentage: 50
 - takeScreenshot: posts-page-2
-- stopApp
-- launchApp
-- extendedWaitUntil:
-    visible: 'sunt aut facere.*'
-    timeout: 30000
-# Android shows the search bar as a header action until it is tapped.
+# Android keeps the search action in the toolbar while scrolling, so no relaunch is needed.
 - tapOn: 'Search'
 - inputText: 'dolorem eum'
 - extendedWaitUntil:
     visible: 'dolorem eum magni eos aperiam quia'
     timeout: 15000
-- assertNotVisible: 'sunt aut facere.*'
+- assertNotVisible: 'asperiores ea ipsam voluptatibus.*'
 - takeScreenshot: posts-search
 - stopRecording

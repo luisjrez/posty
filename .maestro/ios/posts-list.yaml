@@ -7,7 +7,11 @@ name: Posts list · search narrows results and scroll paginates
 - extendedWaitUntil:
     visible: 'sunt aut facere.*'
     timeout: 30000
-# Search first: the header search bar is only visible while the list is at the top.
+# Search first: the header search bar is only visible while the list is at the top. iOS may
+# start with it tucked under the large title, so pull the list down a bit to reveal it.
+- swipe:
+    start: 50%, 35%
+    end: 50%, 50%
 - tapOn: 'Search posts'
 - inputText: 'dolorem eum'
 - extendedWaitUntil:
@@ -15,17 +19,14 @@ name: Posts list · search narrows results and scroll paginates
     timeout: 15000
 - assertNotVisible: 'sunt aut facere.*'
 - takeScreenshot: posts-search
+# Cancelling restores the full list; reaching Post 21 (filtered out by the search and the
+# first one of page 2) proves both the restore and that the next page was fetched.
 - tapOn: 'Cancel'
-# Cancelling restores the full list (keeping the scroll offset), so wait for a Post the
-# search had filtered out.
-- extendedWaitUntil:
-    visible: 'dolorem dolore est ipsam'
-    timeout: 15000
-# Post 21 is the first one of page 2, so seeing it proves the next page was fetched.
 - scrollUntilVisible:
     element: 'asperiores ea ipsam voluptatibus.*'
     direction: DOWN
-    timeout: 30000
+    # Twenty cards plus a page request is a long way on a slow CI emulator.
+    timeout: 60000
     # FlashList reports cards partly clipped by the tab bar; half visible is enough here.
     visibilityPercentage: 50
 - takeScreenshot: posts-page-2

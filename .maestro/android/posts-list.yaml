@@ -11,7 +11,8 @@ name: Posts list · scroll paginates and search narrows results
 - scrollUntilVisible:
     element: 'asperiores ea ipsam voluptatibus.*'
     direction: DOWN
-    timeout: 30000
+    # Twenty cards plus a page request is a long way on a slow CI emulator.
+    timeout: 60000
     # FlashList reports cards partly clipped by the tab bar; half visible is enough here.
     visibilityPercentage: 50
 - takeScreenshot: posts-page-2

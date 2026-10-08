@@ -2,8 +2,10 @@ import { http, HttpResponse } from 'msw';
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
+import { useFavoritesStore } from '@/features/favorites';
 import { Text } from '@/shared/components';
-import { API_URL, renderScreenInStack, server } from '@/test';
+import { storage } from '@/shared/lib';
+import { API_URL, buildPost, renderScreenInStack, server } from '@/test';
 
 import { PostDetailController } from './PostDetailController';
 
@@ -20,6 +22,11 @@ async function openDetail(id: string) {
   await renderScreenInStack(HomeStub, { 'posts/[id]': DetailRoute });
   await act(() => router.push(`/posts/${id}`));
 }
+
+beforeEach(() => {
+  storage.clearAll();
+  useFavoritesStore.setState({ favorites: {} });
+});
 
 describe('PostDetailController', () => {
   it('loads the Post with its Comments behind a skeleton', async () => {
@@ -70,5 +77,26 @@ describe('PostDetailController', () => {
 
     expect(screen.getByText('Comment 1 on post 6')).toBeOnTheScreen();
     expect(screen.queryByLabelText('Loading post')).not.toBeOnTheScreen();
+  });
+
+  it('saves the Post with its Comments from the header heart', async () => {
+    await openDetail('3');
+    await screen.findByText('Comment 1 on post 3');
+
+    await fireEvent.press(screen.getByTestId('favorite-toggle-3'));
+
+    expect(screen.getByTestId('favorite-toggle-3')).toBeSelected();
+    expect(useFavoritesStore.getState().favorites[3]?.comments).toHaveLength(2);
+  });
+
+  it('refreshes a saved Favorite with the Post and Comments it just fetched', async () => {
+    useFavoritesStore.getState().toggle({ post: buildPost({ id: 4, title: 'Old title' }) });
+
+    await openDetail('4');
+    await screen.findByText('Comment 1 on post 4');
+
+    const favorite = useFavoritesStore.getState().favorites[4];
+    expect(favorite?.post.title).toBe('Post 4');
+    expect(favorite?.comments).toHaveLength(2);
   });
 });

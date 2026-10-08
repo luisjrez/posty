@@ -4,6 +4,7 @@ import type { NativeSyntheticEvent, TextInputFocusEventData } from 'react-native
 import { useUnistyles } from 'react-native-unistyles';
 
 import { searchBarOptions } from '@/design-system';
+import { FavoriteToggle, useSyncFavoriteSnapshots } from '@/features/favorites';
 import { useDebouncedValue } from '@/shared/lib';
 
 import { PostList, type PostListState } from '../../components/PostList';
@@ -18,6 +19,10 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 function openPost(post: Post) {
   router.push(`/posts/${post.id}`);
+}
+
+function renderFavoriteToggle(post: Post) {
+  return <FavoriteToggle post={post} />;
 }
 
 // Owns everything stateful about the Posts tab (search text, the infinite query, pull to
@@ -38,6 +43,9 @@ export function PostsListController(_props: PostsListControllerProps) {
     fetchNextPage,
     refetch,
   } = usePostsList(term);
+
+  const snapshots = useMemo(() => data?.posts.map((post) => ({ post })), [data]);
+  useSyncFavoriteSnapshots(snapshots);
 
   const searchBar = useMemo(() => searchBarOptions(theme, 'Search posts'), [theme]);
 
@@ -99,7 +107,12 @@ export function PostsListController(_props: PostsListControllerProps) {
         onChangeText={handleChangeText}
         onCancelButtonPress={handleCancel}
       />
-      <PostList state={state} emptyMessage={emptyMessage(term)} onPressPost={openPost} />
+      <PostList
+        state={state}
+        emptyMessage={emptyMessage(term)}
+        onPressPost={openPost}
+        renderAccessory={renderFavoriteToggle}
+      />
     </>
   );
 }

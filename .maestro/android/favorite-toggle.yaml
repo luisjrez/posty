@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+name: Favorite toggle · save a Post from its card
+---
+- launchApp:
+    clearState: true
+- startRecording: ${MAESTRO_FILENAME}
+- extendedWaitUntil:
+    visible: 'sunt aut facere.*'
+    timeout: 30000
+- assertVisible:
+    id: 'favorite-toggle-1'
+    selected: false
+- tapOn:
+    id: 'favorite-toggle-1'
+# The heart fills (selected) and stays filled: the toggle is backed by the persisted store.
+- assertVisible:
+    id: 'favorite-toggle-1'
+    selected: true
+- takeScreenshot: favorite-toggle
+- stopRecording

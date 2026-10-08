@@ -13,7 +13,7 @@ export type SnapshotInput = { post: Post; comments?: Comment[] | undefined };
 type FavoritesState = {
   favorites: Favorites;
   toggle: (input: SnapshotInput) => void;
-  upsertSnapshots: (inputs: SnapshotInput[]) => void;
+  upsertSnapshots: (inputs: readonly SnapshotInput[]) => void;
 };
 
 function toSnapshot(

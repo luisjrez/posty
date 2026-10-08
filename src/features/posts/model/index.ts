@@ -1,1 +1,10 @@
-export { CommentSchema, PostSchema, type Comment, type Post, type PostId } from './post';
+export {
+  CommentSchema,
+  PostDetailSchema,
+  PostIdParamSchema,
+  PostSchema,
+  type Comment,
+  type Post,
+  type PostDetail,
+  type PostId,
+} from './post';

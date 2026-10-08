@@ -15,6 +15,14 @@ export const CommentSchema = z.object({
   body: z.string(),
 });
 
+export const PostDetailSchema = PostSchema.extend({
+  comments: z.array(CommentSchema),
+});
+
+// Route params arrive as strings; anything that isn't a positive integer can't name a Post.
+export const PostIdParamSchema = z.coerce.number().int().positive();
+
 export type Post = z.infer<typeof PostSchema>;
 export type PostId = Post['id'];
 export type Comment = z.infer<typeof CommentSchema>;
+export type PostDetail = z.infer<typeof PostDetailSchema>;

@@ -1,9 +1,14 @@
-import { requestPaginated } from '@/shared/api';
+import { request, requestPaginated } from '@/shared/api';
 import { escapeRegExp } from '@/shared/lib';
 
-import { PostSchema } from '../model';
+import { PostDetailSchema, PostSchema, type PostId } from '../model';
 
 export const POSTS_PAGE_SIZE = 20;
+
+type DetailParams = {
+  id: PostId;
+  signal?: AbortSignal | undefined;
+};
 
 type ListParams = {
   page: number;
@@ -21,6 +26,15 @@ export const postsApi = {
         _limit: POSTS_PAGE_SIZE,
         ...(term ? { title_like: escapeRegExp(term) } : {}),
       },
+      signal,
+    });
+  },
+
+  // Comments ride along with the Post so the detail is one request and one cache entry.
+  detail({ id, signal }: DetailParams) {
+    return request(PostDetailSchema, {
+      url: `/posts/${id}`,
+      params: { _embed: 'comments' },
       signal,
     });
   },

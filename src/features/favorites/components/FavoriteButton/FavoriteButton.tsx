@@ -48,7 +48,7 @@ export function FavoriteButton({
       <SymbolView
         name={isFavorite ? HEART_FILLED : HEART}
         size={ICON_SIZE}
-        tintColor={isFavorite ? theme.colors.text.accent : theme.colors.text.secondary}
+        tintColor={isFavorite ? theme.colors.favorite : theme.colors.text.secondary}
         style={placement === 'card' ? styles.cardIcon : undefined}
       />
     </Pressable>

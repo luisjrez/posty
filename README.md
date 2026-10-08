@@ -14,12 +14,10 @@ and CI that builds and runs end-to-end tests on both platforms for every pull re
 
 This project was built in two phases, on purpose:
 
-- **Foundation — designed and built by the human.** Architecture and folder structure, the Axios
-  networking layer, server state with TanStack Query, client state with Zustand and MMKV, the design
-  token pipeline, the three Variants and env validation, the base tests, and CI/CD (GitHub Actions
-  and EAS, with fingerprint reuse and Maestro). The human made the architectural decisions and gave
-  the directions; the AI wrote the code from them; the human reviewed and adjusted it, created the
-  files, ran every command and made every commit.
+- **Foundation — designed and built entirely by the human.** Architecture and folder structure,
+  the Axios networking layer, server state with TanStack Query, client state with Zustand and
+  MMKV, the design token pipeline, the three Variants and env validation, the base tests, and CI/CD
+  (GitHub Actions and EAS, with fingerprint reuse and Maestro).
 - **Features — implemented by the AI** from specs and tickets the human wrote: the Posts list,
   search, Post detail, Favorites (toggle, sync, offline tab) and deep links. Each feature landed as
   a pull request with tests and Maestro flows, reviewed against the repo's standards and its ticket,
@@ -27,18 +25,36 @@ This project was built in two phases, on purpose:
 
 ## Getting started
 
-Requirements: [Bun](https://bun.sh), Xcode (iOS) and/or Android Studio (Android), and access to
-the project's EAS account (environment values live in EAS, nothing secret is committed).
+Requirements: [Bun](https://bun.sh), Xcode (iOS) and/or Android Studio (Android). The app needs a
+development build; it does not run in Expo Go.
 
 ```bash
 bun install
-bun run ios            # development Variant on the iOS simulator
-bun run android        # development Variant on an Android emulator
 ```
 
-`bun run ios` / `android` pull the Variant's environment into `.env` (`bun run env:use <variant>`)
-and run `expo run`. With `buildCacheProvider: 'eas'`, a native build matching the local fingerprint
-is downloaded from EAS when one exists, so most runs skip the native compile.
+**Without access to the project's EAS account** (most reviewers): copy the example env file and
+run Expo directly. It only holds the public API URL and the Variant, nothing secret.
+
+```bash
+cp .env.example .env
+bunx expo run:ios        # or: bunx expo run:android
+```
+
+**With access to the EAS account:** sign in (`bunx eas-cli login`) and use the scripts, which pull
+the Variant's environment from EAS into `.env` before running:
+
+```bash
+bun run ios              # development Variant on the iOS simulator
+bun run android          # development Variant on an Android emulator
+```
+
+With `buildCacheProvider: 'eas'`, a native build matching the local fingerprint is downloaded from
+EAS when one exists, so most runs skip the native compile. Without an EAS session it simply builds
+locally.
+
+**Secrets:** none are committed. `.env` is git-ignored, and CI reads the Expo token only from the
+`EXPO_TOKEN` GitHub Actions secret, which forks and pull requests from forks cannot read. To run CI
+in your own fork, create an Expo access token and add it as that secret.
 
 ### Variants
 
@@ -53,10 +69,45 @@ Staging is a Release build for simulators and emulators; CI tests this binary.
 
 ### Design system
 
-Design systems live in `design-systems/<name>/` as W3C design tokens (the format Figma Variables
-export). `bun run ds:apply --ds=posty` validates one and generates the typed Unistyles themes in
-`src/design-system/generated/` (try `--ds=lagoon` to swap the whole look). `bun run ds:check` fails
-if the generated files are out of date. The app follows the device's light/dark setting.
+The look of the app is data, not code. A design system is a folder of
+[W3C design tokens](https://www.designtokens.org/) (the JSON format Figma Variables and Tokens
+Studio export), and a script turns it into typed Unistyles themes. Two ship with the repo:
+`design-systems/posty` (the default) and `design-systems/lagoon`.
+
+```
+design-systems/posty/
+  manifest.json          name, which files are themes and shared tokens, fonts to bundle
+  tokens/primitives.json raw values: the color palette (ink, coral, rose…)
+  tokens/scales.json     space and radius scales
+  tokens/typography.json font families, sizes, line heights and text styles
+  tokens/posty-light.json semantic colors for light: bg, text, border, accent, favorite
+  tokens/posty-dark.json  the same keys for dark
+  fonts/                 the font files the manifest declares
+```
+
+- **Three layers.** Primitives hold raw values. Semantic tokens give them a meaning per theme by
+  referencing them (`"text.accent": "{palette.coral.500}"`). Scales and typography are shared by
+  both themes. Components only ever see the semantic names, so a theme or a whole design system can
+  change without touching them.
+- **`bun run ds:apply --ds=<name>`** validates the folder and writes `src/design-system/generated/`
+  (themes, fonts, style-prop maps) and copies the fonts to `assets/fonts/`. It fails, without
+  writing anything, if a file is missing, an alias doesn't resolve, a required group (`space`,
+  `radius`, `fontFamily`, `fontSize`, `lineHeight`, `typography`, and `color` in each theme) is
+  absent, the light and dark themes don't have the same keys, or a text style uses a font the
+  manifest doesn't declare.
+- **Themes are always called `light` and `dark` in the app**, whatever the design system names them,
+  so Unistyles' adaptive themes and the navigation theme follow the device setting with no code
+  changes.
+- **Style props take token keys, never raw values** (`<Text variant="title" color="secondary">`,
+  `<Box padding="md" bg="surface">`), typed from the generated maps.
+- `bun run ds:check` fails when the generated files don't match the design system (CI runs it), and
+  EAS builds apply the one named in the `DESIGN_SYSTEM` env of `eas.json` (`posty`).
+
+**Creating a new design system:** copy `design-systems/posty` to `design-systems/<name>`, set
+`name` in its `manifest.json`, change the values (keep the same semantic keys, since components use
+them), drop your fonts in `fonts/` and list them in the manifest, then run
+`bun run ds:apply --ds=<name>` and fix whatever it reports. Try `--ds=lagoon` to see a whole
+re-skin; `--ds=posty` brings the default back.
 
 ### Tests
 

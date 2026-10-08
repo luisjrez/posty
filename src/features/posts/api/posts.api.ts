@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { request, requestPaginated } from '@/shared/api';
 import { escapeRegExp } from '@/shared/lib';
 
@@ -7,6 +9,11 @@ export const POSTS_PAGE_SIZE = 20;
 
 type DetailParams = {
   id: PostId;
+  signal?: AbortSignal | undefined;
+};
+
+type ByIdsParams = {
+  ids: readonly PostId[];
   signal?: AbortSignal | undefined;
 };
 
@@ -28,6 +35,11 @@ export const postsApi = {
       },
       signal,
     });
+  },
+
+  // One request for any set of Posts (e.g. refreshing saved Favorites), unpaginated.
+  byIds({ ids, signal }: ByIdsParams) {
+    return request(z.array(PostSchema), { url: '/posts', params: { id: ids }, signal });
   },
 
   // Comments ride along with the Post so the detail is one request and one cache entry.

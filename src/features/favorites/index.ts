@@ -1,4 +1,5 @@
 export { FavoriteToggle, type FavoriteToggleProps } from './controllers/FavoriteToggle';
+export { useFavoriteSnapshot } from './hooks/useFavoriteSnapshot';
 export { useIsFavorite } from './hooks/useIsFavorite';
 export { useSyncFavoriteSnapshots } from './hooks/useSyncFavoriteSnapshots';
 export { useToggleFavorite } from './hooks/useToggleFavorite';

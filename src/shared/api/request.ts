@@ -3,7 +3,9 @@ import { z } from 'zod';
 import { ApiError } from './ApiError';
 import { httpClient } from './httpClient';
 
-type QueryParams = Record<string, string | number>;
+type ParamValue = string | number;
+// Arrays are sent as repeated keys (`id=1&id=2`), which is what json-server expects.
+type QueryParams = Record<string, ParamValue | readonly ParamValue[]>;
 
 export type RequestConfig = {
   url: string;

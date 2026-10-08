@@ -20,7 +20,14 @@ function ItemSeparator() {
   return <View style={styles.separator} />;
 }
 
-export function PostList({ state, emptyMessage, onPressPost, renderAccessory }: PostListProps) {
+export function PostList({
+  state,
+  emptyMessage,
+  emptyHint,
+  header,
+  onPressPost,
+  renderAccessory,
+}: PostListProps) {
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<Post>) => (
       <PostCard post={item} onPress={onPressPost} accessory={renderAccessory?.(item)} />
@@ -41,7 +48,11 @@ export function PostList({ state, emptyMessage, onPressPost, renderAccessory }: 
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       ItemSeparatorComponent={ItemSeparator}
-      ListEmptyComponent={<PostListPlaceholder state={state} emptyMessage={emptyMessage} />}
+      ListHeaderComponent={header}
+      ListHeaderComponentStyle={styles.header}
+      ListEmptyComponent={
+        <PostListPlaceholder state={state} emptyMessage={emptyMessage} emptyHint={emptyHint} />
+      }
       ListFooterComponent={isReady ? <PostListFooter state={state.footer} /> : null}
       onEndReached={isReady ? state.onEndReached : undefined}
       onEndReachedThreshold={END_REACHED_THRESHOLD}

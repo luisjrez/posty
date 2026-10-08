@@ -1,7 +1,12 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
-import { FavoriteToggle, useSyncFavoriteSnapshots } from '@/features/favorites';
+import {
+  FavoriteToggle,
+  useFavoriteSnapshot,
+  useSyncFavoriteSnapshots,
+} from '@/features/favorites';
+import { useIsOnline } from '@/shared/query';
 
 import { PostDetail } from '../../components/PostDetail';
 import { usePostDetail } from '../../hooks/usePostDetail';
@@ -12,25 +17,31 @@ import { detailState, parsePostId, toSnapshotInput } from './PostDetailControlle
 // Turns the route param and the detail query into one view state; PostDetail never fetches.
 export function PostDetailController(_props: PostDetailControllerProps) {
   const { id } = useLocalSearchParams();
-  const { refetch, fetchedAt, ...detail } = usePostDetail(parsePostId(id));
+  const postId = parsePostId(id);
+  const { refetch, fetchedAt, ...detail } = usePostDetail(postId);
+  const savedCopy = useFavoriteSnapshot(postId);
+  const isOnline = useIsOnline();
 
   // The detail is the only fetch that carries Comments, so it is what keeps them fresh offline.
   const snapshot = useMemo(() => detail.detail && toSnapshotInput(detail.detail), [detail.detail]);
   const snapshots = useMemo(() => (snapshot ? [snapshot] : undefined), [snapshot]);
   useSyncFavoriteSnapshots(snapshots, fetchedAt);
 
+  // Offline, the heart works on the saved copy so a Favorite can still be removed.
+  const heart = snapshot ?? (isOnline ? undefined : savedCopy);
+
   const handleRetry = useCallback(() => void refetch(), [refetch]);
 
   return (
     <>
-      {snapshot ? (
+      {heart ? (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.View>
-            <FavoriteToggle {...snapshot} placement="header" />
+            <FavoriteToggle {...heart} placement="header" />
           </Stack.Toolbar.View>
         </Stack.Toolbar>
       ) : null}
-      <PostDetail state={detailState({ ...detail, onRetry: handleRetry })} />
+      <PostDetail state={detailState({ ...detail, isOnline, savedCopy, onRetry: handleRetry })} />
     </>
   );
 }

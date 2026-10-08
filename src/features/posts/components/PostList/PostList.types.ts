@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import type { Post } from '../../model';
 import type { PostListFooterState } from '../PostListFooter';
@@ -21,6 +21,10 @@ export type PostListProps = {
   state: PostListState;
   /** Shown when the list is ready but empty; the controller knows why it's empty. */
   emptyMessage: string;
+  /** Optional second line for the empty state, e.g. how to fill the list. */
+  emptyHint?: string | undefined;
+  /** Rendered above the first card, e.g. an offline notice. */
+  header?: ReactElement | null;
   onPressPost: (post: Post) => void;
   /** Lets the screen add per-card controls without the list knowing what they are. */
   renderAccessory?: (post: Post) => ReactNode;

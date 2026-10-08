@@ -10,6 +10,7 @@ export const postKeys = {
   all: ['posts'] as const,
   lists: () => [...postKeys.all, 'list'] as const,
   list: (search: string) => [...postKeys.lists(), { search }] as const,
+  byIds: (ids: readonly PostId[]) => [...postKeys.all, 'byIds', ids] as const,
   details: () => [...postKeys.all, 'detail'] as const,
   detail: (id: PostId | null) => [...postKeys.details(), id] as const,
 };
@@ -28,5 +29,13 @@ export function postDetailOptions(id: PostId | null) {
   return queryOptions({
     queryKey: postKeys.detail(id),
     queryFn: id === null ? skipToken : ({ signal }) => postsApi.detail({ id, signal }),
+  });
+}
+
+// No ids means nothing to fetch (e.g. no Favorites yet).
+export function postsByIdsOptions(ids: readonly PostId[]) {
+  return queryOptions({
+    queryKey: postKeys.byIds(ids),
+    queryFn: ids.length === 0 ? skipToken : ({ signal }) => postsApi.byIds({ ids, signal }),
   });
 }

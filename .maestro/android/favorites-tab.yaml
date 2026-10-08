@@ -1,0 +1,23 @@
+appId: ${APP_ID}
+name: Favorites tab · a saved Post appears there and can be removed
+---
+- launchApp:
+    clearState: true
+- startRecording: ${MAESTRO_FILENAME}
+- extendedWaitUntil:
+    visible: 'sunt aut facere.*'
+    timeout: 30000
+- tapOn:
+    id: 'favorite-toggle-2'
+- tapOn: 'Favorites'
+- extendedWaitUntil:
+    visible: 'qui est esse'
+    timeout: 15000
+- takeScreenshot: favorites-tab
+# Its heart removes it, leaving the empty state that explains how to save.
+- tapOn:
+    id: 'favorite-toggle-2'
+- extendedWaitUntil:
+    visible: 'Tap the heart on a post to save it here.'
+    timeout: 5000
+- stopRecording

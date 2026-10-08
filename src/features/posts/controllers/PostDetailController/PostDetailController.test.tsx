@@ -1,11 +1,12 @@
 import { http, HttpResponse } from 'msw';
+import { onlineManager } from '@tanstack/react-query';
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { useFavoritesStore } from '@/features/favorites';
 import { Text } from '@/shared/components';
 import { storage } from '@/shared/lib';
-import { API_URL, buildPost, renderScreenInStack, server } from '@/test';
+import { API_URL, buildComment, buildPost, renderScreenInStack, server } from '@/test';
 
 import { PostDetailController } from './PostDetailController';
 
@@ -27,6 +28,8 @@ beforeEach(() => {
   storage.clearAll();
   useFavoritesStore.setState({ favorites: {} });
 });
+
+afterEach(() => onlineManager.setOnline(true));
 
 describe('PostDetailController', () => {
   it('loads the Post with its Comments behind a skeleton', async () => {
@@ -98,5 +101,49 @@ describe('PostDetailController', () => {
     const favorite = useFavoritesStore.getState().favorites[4];
     expect(favorite?.post.title).toBe('Post 4');
     expect(favorite?.comments).toHaveLength(2);
+  });
+
+  describe('offline', () => {
+    function trackRequests() {
+      const requests: string[] = [];
+      server.events.on('request:start', ({ request }) => requests.push(request.url));
+      return requests;
+    }
+
+    it('renders a Favorite and its Comments from the saved copy, with a notice', async () => {
+      const post = buildPost({ id: 8, title: 'Saved post 8' });
+      useFavoritesStore
+        .getState()
+        .toggle({ post, comments: [buildComment({ postId: 8, name: 'Saved comment' })] });
+      onlineManager.setOnline(false);
+      const requests = trackRequests();
+
+      await openDetail('8');
+
+      expect(screen.getByText('Saved post 8')).toBeOnTheScreen();
+      expect(screen.getByText('Saved comment')).toBeOnTheScreen();
+      expect(screen.getByText(/^Offline · updated/)).toBeOnTheScreen();
+      expect(requests).toEqual([]);
+    });
+
+    it('says the Comments were not saved when the Favorite was saved from the list', async () => {
+      useFavoritesStore.getState().toggle({ post: buildPost({ id: 8, title: 'Saved post 8' }) });
+      onlineManager.setOnline(false);
+
+      await openDetail('8');
+
+      expect(screen.getByText('Saved post 8')).toBeOnTheScreen();
+      expect(
+        screen.getByText('Open this post online once to read its comments offline.'),
+      ).toBeOnTheScreen();
+    });
+
+    it('shows an error instead of an endless skeleton for a Post that is not saved', async () => {
+      onlineManager.setOnline(false);
+
+      await openDetail('9');
+
+      expect(screen.getByText('Could not load post')).toBeOnTheScreen();
+    });
   });
 });

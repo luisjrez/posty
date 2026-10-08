@@ -28,8 +28,10 @@ export const handlers = [
     const page = toNumber(params.get('_page'), 1);
     const limit = toNumber(params.get('_limit'), seedPosts.length);
     const titleLike = params.get('title_like');
+    const ids = params.getAll('id');
 
-    let posts = seedPosts;
+    let posts =
+      ids.length > 0 ? seedPosts.filter((post) => ids.includes(String(post.id))) : seedPosts;
     if (titleLike !== null) {
       try {
         const pattern = new RegExp(titleLike, 'i');

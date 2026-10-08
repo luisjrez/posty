@@ -7,6 +7,8 @@ import { toApiError } from './ApiError';
 export const httpClient = create({
   baseURL: env.apiUrl,
   timeout: 10_000,
+  // Axios defaults to `id[]=1&id[]=2`; json-server only understands repeated `id=1&id=2`.
+  paramsSerializer: { indexes: null },
 });
 
 httpClient.interceptors.response.use(undefined, (error: unknown) =>

@@ -66,3 +66,17 @@ describe('postsApi.detail', () => {
     });
   });
 });
+
+describe('postsApi.byIds', () => {
+  it('asks for every id as a repeated query param', async () => {
+    let query = '';
+    server.events.on('request:start', ({ request }) => {
+      query = new URL(request.url).search;
+    });
+
+    const posts = await postsApi.byIds({ ids: [3, 1] });
+
+    expect(query).toBe('?id=3&id=1');
+    expect(posts.map((post) => post.id).sort()).toEqual([1, 3]);
+  });
+});

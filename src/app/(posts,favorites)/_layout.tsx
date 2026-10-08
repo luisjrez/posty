@@ -29,6 +29,9 @@ function listScreenOptions(theme: Theme, group: TabGroup) {
   return {
     title,
     headerLargeTitle: true,
+    // Large titles force a transparent header on iOS; without a blur the collapsed header
+    // shows the list scrolling underneath the title and status bar.
+    headerBlurEffect: 'systemChromeMaterial' as const,
     headerSearchBarOptions: searchBarOptions(theme, placeholder),
   };
 }

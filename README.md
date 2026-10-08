@@ -15,10 +15,11 @@ and CI that builds and runs end-to-end tests on both platforms for every pull re
 This project was built in two phases, on purpose:
 
 - **Foundation — designed and built by the human.** Architecture and folder structure, the Axios
-  networking layer, server state with TanStack Query, client state with Zustand + MMKV, the design
+  networking layer, server state with TanStack Query, client state with Zustand and MMKV, the design
   token pipeline, the three Variants and env validation, the base tests, and CI/CD (GitHub Actions
-  - EAS with fingerprint reuse and Maestro). An AI assistant explained options and drafted code on
-    request; the human made every decision, created the files, ran the commands and made the commits.
+  and EAS, with fingerprint reuse and Maestro). The human made the architectural decisions and gave
+  the directions; the AI wrote the code from them; the human reviewed and adjusted it, created the
+  files, ran every command and made every commit.
 - **Features — implemented by the AI** from specs and tickets the human wrote: the Posts list,
   search, Post detail, Favorites (toggle, sync, offline tab) and deep links. Each feature landed as
   a pull request with tests and Maestro flows, reviewed against the repo's standards and its ticket,
@@ -48,7 +49,7 @@ is downloaded from EAS when one exists, so most runs skip the native compile.
 | production  | Posty         | `posty://`       | EAS `production` profile                      |
 
 Each Variant has its own bundle ID, name, icon badge and scheme, so all three install side by side.
-Staging is a Release build for simulators/emulators: it is the binary CI tests.
+Staging is a Release build for simulators and emulators; CI tests this binary.
 
 ### Design system
 
@@ -62,6 +63,7 @@ if the generated files are out of date. The app follows the device's light/dark 
 ```bash
 bun run check          # ds:check + typecheck + lint + unit/integration tests (what CI runs)
 bun run test           # Jest only
+bun run ios:stage      # install the staging app first: the E2E scripts target it
 bun run e2e:ios        # Maestro flows against the installed staging app
 bun run e2e:android
 ```
@@ -73,11 +75,13 @@ bun run e2e:android
 
 ### CI
 
-Every pull request to `main` runs on GitHub Actions:
+Every pull request to `main` (and every push to it) runs on GitHub Actions:
 
 1. `check` (design-system drift, typecheck, lint, tests).
-2. Per platform: compute the native fingerprint; if a staging build for it already exists, reuse it
-   and repack it with the new JS, otherwise build on EAS. The artifact link is posted on the PR.
+2. Per platform: compute the native fingerprint. If a staging build for it already exists (GitHub
+   cache, then EAS), reuse it and repack it with the new JS; otherwise build it, on the GitHub
+   runner by default or on EAS when the `BUILD_RUNNER` repository variable is `eas`. The artifact
+   link is posted on the PR.
 3. Per platform: install that artifact on an emulator (Ubuntu) or simulator (macOS) and run the
    Maestro flows; videos and JUnit reports are uploaded and summarized on the PR.
 
@@ -90,7 +94,7 @@ src/
     posts/        api, model, hooks, components, controllers, screens
     favorites/    store, hooks, components, controllers, screens
   shared/         api (Axios + ApiError), query, components, lib
-  design-system/  generated themes, fonts, navigation theme
+  design-system/  generated themes, Unistyles setup, navigation theme
   config/         Variant + env validation
 ```
 
@@ -111,5 +115,6 @@ Key decisions (the full ADRs are kept out of the repository):
 - **Navigation:** native tabs, each with its own stack and a shared detail route; native header
   search. Deep links (`posts/:id`, `favorites`, `favorites/posts/:id`) work on cold and warm start
   and keep the tab's list underneath so back returns to it. Invalid ids show "Post not found".
-- **Strict TypeScript:** `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, no
-  `any`, no type assertions.
+- **Strict TypeScript:** `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, and
+  `any` banned by ESLint. Type assertions are avoided by convention (Zod parsing and type guards
+  instead), not by a lint rule.
